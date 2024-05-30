@@ -1,7 +1,10 @@
 const Userdetails = require("../models/Userdetails")
 const Users = require("../models/Users")
+const Wallets = require("../models/Wallets")
 const { default: mongoose } = require("mongoose")
 const bcrypt = require('bcrypt');
+
+//  #region PLAYER
 
 exports.getuserdetails = async (req, res) => {
     const {id, username} = req.user
@@ -16,13 +19,26 @@ exports.getuserdetails = async (req, res) => {
     })
 
     if (!details){
-        return res.status(400).json({ message: "bad-request", data: "There's a problem with your account! Please contact customer support." })
+        return res.status(400).json({ message: "bad-request", data: "There's a problem with your account! Please contact customer support. Error Code: No user data" })
+    }
+
+    const walletdata = await Wallets.findOne({owner: new mongoose.Types.ObjectId(id)})
+    .then(data => data)
+    .catch(err => {
+        console.log(`There's a problem with server. Error: ${err}`)
+
+        return res.status(400).json({ message: "bad-request", data: "There's a problem with the server! Please try again later" })
+    })
+
+    if (!walletdata){
+        return res.status(400).json({ message: "bad-request", data: "There's a problem with your account! Please contact customer support. Error Code: No wallet data" })
     }
 
     const data = {
         username: username,
         email: details.email,
         country: details.country,
+        funds: walletdata.amount
     }
 
     return res.json({message: "success", data: data})
@@ -68,16 +84,57 @@ exports.updateuserprofile = async (req, res) => {
     return res.json({message: "success"})
 }
 
+//  #endregion
+
+//  #region ADMIN
+
 exports.getplayerlist = async (req, res) => {
     const {id, username} = req.user
-    const {page, limit} = req.query
+    const {page, limit, search, filter} = req.query
 
     const pageOptions = {
         page: parseInt(page) || 0,
         limit: parseInt(limit) || 10
     };
 
+    // Construct the search match stage
+    let searchMatchStage = {};
+
+    if (search) {
+        searchMatchStage = {
+            $or: [
+                { username: { $regex: search, $options: 'i' } },
+                { "userDetails.email": { $regex: search, $options: 'i' } }
+            ]
+        };
+    }
+
+    // Construct the filter match stage
+    let filterMatchStage = {};
+
+    if (filter) {
+        if (filter === 'active' || filter === 'inactive') {
+            filterMatchStage = { status: filter };
+        }
+    }
+
+
     const userlistpipeline = [
+        {
+            $lookup: {
+                from: "userdetails", // Assuming the collection name for UserDetails is "userdetails"
+                localField: "_id",
+                foreignField: "owner",
+                as: "userDetails"
+            }
+        },
+        {
+            $unwind: "$userDetails"
+        },
+        // Apply search match stage if search is provided and not empty
+        ...(search ? [{ $match: searchMatchStage }] : []),
+        // Apply filter match stage if filter is provided and not empty
+        ...(filter ? [{ $match: filterMatchStage }] : []),
         {
             $facet: {
                 totalCount: [
@@ -87,18 +144,10 @@ exports.getplayerlist = async (req, res) => {
                 ],
                 data: [
                     {
-                        $lookup: {
-                            from: "userdetails", // Assuming the collection name for UserDetails is "userdetails"
-                            localField: "_id",
-                            foreignField: "owner",
-                            as: "userDetails"
-                        }
-                    },
-                    {
                         $project: {
                             username: 1,
-                            email: { $arrayElemAt: ["$userDetails.email", 0] },
-                            country: { $arrayElemAt: ["$userDetails.country", 0] },
+                            email: "$userDetails.email",
+                            country: "$userDetails.country",
                             createdAt: 1,
                             status: 1
                         }
@@ -112,7 +161,7 @@ exports.getplayerlist = async (req, res) => {
                 ]
             }
         }
-    ]
+    ];
 
     const userlist = await Users.aggregate(userlistpipeline)
     .catch(err => {
@@ -123,9 +172,10 @@ exports.getplayerlist = async (req, res) => {
     })
 
     const data = {
-        totalPages: Math.ceil(userlist[0].totalCount[0].total / pageOptions.limit),
+        totalPages: userlist[0].totalCount.length > 0 ? Math.ceil(userlist[0].totalCount[0].total / pageOptions.limit) : 0,
         userlist: []
     }
+
 
     userlist[0].data.forEach(value => {
         const {_id, username, status, createdAt, email, country} = value
@@ -268,197 +318,4 @@ exports.getplayersbystatus = async(req, res) => {
     return res.json({message: "success", data: data})
 }
 
-exports.searchplayerbyusername = async (req, res) => {
-    const {id, username} = req.user
-    const {page, limit, status} = req.query
-    const { search } = req.body
-
-    const pageOptions = {
-        page: parseInt(page) || 0,
-        limit: parseInt(limit) || 10
-    };
-
-    const userlistpipeline = [
-        {
-            $facet: {
-                
-                data: [
-                    {
-                        $lookup: {
-                            from: "userdetails", // Assuming the collection name for UserDetails is "userdetails"
-                            localField: "_id",
-                            foreignField: "owner",
-                            as: "userDetails"
-                        }
-                    },
-                    {
-                        $project: {
-                            username: 1,
-                            email: { $arrayElemAt: ["$userDetails.email", 0] },
-                            country: { $arrayElemAt: ["$userDetails.country", 0] },
-                            createdAt: 1,
-                            status: 1
-                        }
-                    },
-                    {
-                        $skip: pageOptions.page * pageOptions.limit
-                    },
-                    {
-                        $limit: pageOptions.limit
-                    },
-                    {
-                        $match: {
-                            status: status,
-                            username: {$regex: search}
-                        }
-                    }
-                ],
-                totalCount: [
-                    {
-                        $match: {
-                            status: status,
-                            username: {$regex: search}
-                        }
-                    },
-                    {
-                        $count: "total"
-                    },
-                ],
-            }
-        }
-    ]
-
-    const userlist = await Users.aggregate(userlistpipeline)
-    .catch(err => {
-
-        console.log(`There's a problem getting users list for ${username} Error: ${err}`)
-
-        return res.status(400).json({ message: "bad-request", data: "There's a problem getting you user details. Please contact customer support." })
-    })
-
-    const data = {
-        totalPages: Math.ceil((userlist[0].totalCount[0] !== undefined? userlist[0].totalCount[0].total : 0) / pageOptions.limit),
-        userlist: []
-    }
-
-    userlist[0].data.forEach(value => {
-        const {_id, username, status, createdAt, email, country} = value
-
-        data["userlist"].push(
-            {
-                id: _id,
-                username: username,
-                email: email,
-                country: country,
-                status: status,
-                createdAt: createdAt
-            }
-        )
-    })
-
-    return res.json({message: "success", data: data})
-}
-
-exports.searchplayerbyemail = async (req, res) => {
-    const {id, username} = req.user
-    const {page, limit, status} = req.query
-    const { search } = req.body
-
-    const pageOptions = {
-        page: parseInt(page) || 0,
-        limit: parseInt(limit) || 10
-    };
-
-    const userlistpipeline = [
-        {
-            $facet: {
-                data: [
-                    {
-                        $lookup: {
-                            from: "userdetails", // Assuming the collection name for UserDetails is "userdetails"
-                            localField: "_id",
-                            foreignField: "owner",
-                            as: "userDetails"
-                        }
-                    },
-                    {
-                        $project: {
-                            username: 1,
-                            email: { $arrayElemAt: ["$userDetails.email", 0] },
-                            country: { $arrayElemAt: ["$userDetails.country", 0] },
-                            createdAt: 1,
-                            status: 1
-                        }
-                    },
-                    {
-                        $skip: pageOptions.page * pageOptions.limit
-                    },
-                    {
-                        $limit: pageOptions.limit
-                    },
-                    {
-                        $match: {
-                            status: status,
-                            email: {$regex: search}
-                        }
-                    }
-                ],
-            }
-        }
-    ]
-
-    const countpipeline = [
-        {
-            $facet: {
-                totalCount: [
-                    {
-                        $match: {
-                            email: { $regex: search }
-                        }
-                    },
-                    {
-                        $count: "total"
-                    }
-                ],
-            }
-        }
-    ]
-
-    const userlist = await Users.aggregate(userlistpipeline)
-    .catch(err => {
-
-        console.log(`There's a problem getting users list for ${username} Error: ${err}`)
-
-        return res.status(400).json({ message: "bad-request", data: "There's a problem getting you user details. Please contact customer support." })
-    })
-
-    const countlist = await Userdetails.aggregate(countpipeline)
-    .catch(err => {
-
-        console.log(`There's a problem getting users list for ${username} Error: ${err}`)
-
-        return res.status(400).json({ message: "bad-request", data: "There's a problem getting you user details. Please contact customer support." })
-    })
-
-    const data = {
-        totalPages: Math.ceil((countlist[0].totalCount[0] !== undefined ? countlist[0].totalCount[0].total : 0) / pageOptions.limit),
-        userlist: []
-    }
-
-    userlist[0].data.forEach(value => {
-        const {_id, username, status, createdAt, email, country} = value
-
-        data["userlist"].push(
-            {
-                id: _id,
-                username: username,
-                email: email,
-                country: country,
-                status: status,
-                createdAt: createdAt
-            }
-        )
-    })
-
-    return res.json({message: "success", data: data})
-}
+//  #endregion
