@@ -2,6 +2,7 @@ const Users = require("../models/Users")
 const Userdetails = require("../models/Userdetails")
 const Staffusers = require("../models/Staffusers")
 const PlayerCharacterSetting = require("../models/Playercharactersettings")
+const Wallets = require("../models/Wallets")
 const fs = require('fs')
 
 const bcrypt = require('bcrypt');
@@ -56,7 +57,21 @@ exports.register = async (req, res) => {
 
         await Users.findOneAndDelete({_id: new mongoose.Types.ObjectId(player._id)})
 
-        await Userdetails.findOneAndDelete({_id: new mongoose.Types.ObjectId(player._id)})
+        await Userdetails.findOneAndDelete({owner: new mongoose.Types.ObjectId(player._id)})
+
+        console.log(`There's a problem creating user details for ${player._id} Error: ${err}`)
+
+        return res.status(400).json({ message: "bad-request", data: "There's a problem registering your account. Please try again." })
+    })
+
+    await Wallets.create({owner: new mongoose.Types.ObjectId(player._id), type: 'coins', amount: 0})
+    .catch(async err => {
+
+        await Users.findOneAndDelete({_id: new mongoose.Types.ObjectId(player._id)})
+
+        await Userdetails.findOneAndDelete({owner: new mongoose.Types.ObjectId(player._id)})
+
+        await PlayerCharacterSetting.findOneAndDelete({owner: new mongoose.Types.ObjectId(player._id)})
 
         console.log(`There's a problem creating user details for ${player._id} Error: ${err}`)
 
