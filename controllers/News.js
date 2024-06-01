@@ -65,7 +65,10 @@ exports.editnews = async (req, res) => {
     }
 
     if (banner != ""){
-        fs.unlinkSync(newsolddata.banner)
+
+        if (newsolddata.banner != ""){
+            fs.unlinkSync(newsolddata.banner)
+        }
     }
 
     await News.findOneAndUpdate({_id: newsid}, {owner: new mongoose.Types.ObjectId(id), title: title, description: description, banner: banner})
