@@ -92,4 +92,44 @@ exports.viewplayermessage = async (req, res) => {
     return res.json({message: "success", data: {totalpages: totalpages, inbox: inboxdata}})
 }
 
+exports.messageplayers = async (req, res) => {
+    const {id, username} = req.user
+    const {type, title, description} = req.body
+
+    const userdata = await Users.find()
+    .then(data => data)
+    .catch(err => {
+        console.log(`Server error: ${err}`)
+
+        return res.status(400).json({ message: "bad-request", data: "There's a problem with the server please try again later"})
+    });
+
+    if (userdata.length <= 0){
+        return res.json({message: "success"})
+    }
+
+    const messages = []
+
+    userdata.forEach(users => {
+        const {_id} = users
+
+        messages.push({
+            insertOne: {
+                document: {
+                    owner: new mongoose.Types.ObjectId(_id),
+                    type: type,
+                    rewards: [],
+                    title: title,
+                    description: description,
+                    status: "unopen"
+                }
+            }
+        })
+    })
+
+    await Inbox.bulkWrite(messages)
+
+    return res.json({message: "success"})
+}
+
 //  #endregion
