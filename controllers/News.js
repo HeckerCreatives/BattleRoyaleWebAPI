@@ -71,7 +71,7 @@ exports.editnews = async (req, res) => {
         }
     }
 
-    await News.findOneAndUpdate({_id: newsid}, {owner: new mongoose.Types.ObjectId(id), title: title, description: description, banner: banner})
+    await News.findOneAndUpdate({_id: newsid}, {owner: new mongoose.Types.ObjectId(id), title: title, description: description, banner: banner != "" ? banner : newsolddata.banner})
     .catch(err => {
         fs.unlinkSync(banner)
         console.log(`Server error: ${err}`)
