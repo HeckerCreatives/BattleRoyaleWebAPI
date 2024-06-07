@@ -9,7 +9,8 @@ exports.changepassword = async (req, res) => {
     await Staffusers.findOne({_id: new mongoose.Types.ObjectId(id)})
     .then(async user => {
         if (user && (await user.matchPassword(oldpw))){
-            await Staffusers.findOneAndUpdate({_id: new mongoose.Types.ObjectId(id)}, {password: newpw})
+            const hashPassword = bcrypt.hashSync(newpw, 10)
+            await Staffusers.findOneAndUpdate({_id: new mongoose.Types.ObjectId(id)}, {password: hashPassword})
             .catch(err => {
     
                 console.log(`There's a problem getting users list for ${username} Error: ${err}`)

@@ -34,7 +34,6 @@ StaffUsersSchema.pre("save", async function (next) {
 })
 
 StaffUsersSchema.methods.matchPassword = async function(password){
-    console.log(password)
     return await bcrypt.compare(password, this.password)
 }
 
