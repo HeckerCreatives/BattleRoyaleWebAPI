@@ -12,6 +12,6 @@ router
     .get("/getplayerbystatus", protectsuperadmin, getplayersbystatus)
     .get("/getregistrationcount", protectsuperadmin, getregistrationcount)
     .get("/getuserregistrationchart", protectsuperadmin, getuserregistrationchart)
-    .post("changeplayerpasswordadmin", protectsuperadmin, changepasswordforadmin)
+    .post("/changeplayerpasswordadmin", protectsuperadmin, changepasswordforadmin)
     
 module.exports = router;
