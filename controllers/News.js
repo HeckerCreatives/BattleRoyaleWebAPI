@@ -99,7 +99,11 @@ exports.deletenews = async (req, res) => {
     }
 
     if (newsdata.banner != ''){
-        fs.unlinkSync(newsdata.banner)
+        try {
+            fs.unlinkSync(newsdata.banner)
+        } catch (error) {
+            console.log(`image banner not exist on server storage: ${error}`)
+        }
     }
 
     return res.json({message: "success"})
