@@ -524,4 +524,34 @@ exports.getuserregistrationchart = async (req, res) => {
     }
 }
 
+exports.changepasswordforadmin = async (req, res) => {
+    const {id, username} = req.user
+    const {userid, oldpw, newpw} = req.body
+
+    await Users.findOne({_id: new mongoose.Types.ObjectId(userid)})
+    .then(async user => {
+        if (user && (await user.matchPassword(oldpw))){
+            const hashPassword = bcrypt.hashSync(newpw, 10)
+            await Users.findOneAndUpdate({_id: new mongoose.Types.ObjectId(userid)}, {password: hashPassword})
+            .catch(err => {
+    
+                console.log(`There's a problem getting users list for ${username} Error: ${err}`)
+        
+                return res.status(400).json({ message: "bad-request", data: "There's a problem with the server! Please contact customer support." })
+            })
+    
+            return res.json({message: "success"})
+        }
+        else{
+            return res.status(400).json({message: "failed", data: "Old password does not match!"})
+        }
+    })
+    .catch(err => {
+
+        console.log(`There's a problem getting users list for ${username} Error: ${err}`)
+
+        return res.status(400).json({ message: "bad-request", data: "There's a problem with the server! Please contact customer support." })
+    })
+}
+
 //  #endregion

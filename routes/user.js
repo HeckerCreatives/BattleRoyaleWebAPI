@@ -1,5 +1,5 @@
 const router = require("express").Router()
-const { getuserdetails, changepassworduser, getplayerlist, updateuserprofile, banunbanuser, getplayercount, getplayersbystatus, getregistrationcount, getuserregistrationchart } = require("../controllers/user")
+const { getuserdetails, changepassworduser, getplayerlist, updateuserprofile, banunbanuser, getplayercount, getplayersbystatus, getregistrationcount, getuserregistrationchart, changepasswordforadmin } = require("../controllers/user")
 const { protectplayer, protectsuperadmin } = require("../middleware/middleware")
 
 router
@@ -12,5 +12,6 @@ router
     .get("/getplayerbystatus", protectsuperadmin, getplayersbystatus)
     .get("/getregistrationcount", protectsuperadmin, getregistrationcount)
     .get("/getuserregistrationchart", protectsuperadmin, getuserregistrationchart)
+    .post("changeplayerpasswordadmin", protectsuperadmin, changepasswordforadmin)
     
 module.exports = router;
