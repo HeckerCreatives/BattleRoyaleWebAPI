@@ -526,11 +526,11 @@ exports.getuserregistrationchart = async (req, res) => {
 
 exports.changepasswordforadmin = async (req, res) => {
     const {id, username} = req.user
-    const {userid, oldpw, newpw} = req.body
+    const {userid, newpw} = req.body
 
     await Users.findOne({_id: new mongoose.Types.ObjectId(userid)})
     .then(async user => {
-        if (user && (await user.matchPassword(oldpw))){
+        if (user){
             const hashPassword = bcrypt.hashSync(newpw, 10)
             await Users.findOneAndUpdate({_id: new mongoose.Types.ObjectId(userid)}, {password: hashPassword})
             .catch(err => {
