@@ -1,6 +1,7 @@
 const { default: mongoose } = require("mongoose")
 const Inbox = require("../models/Inbox")
 const Users = require("../models/Users")
+const {getdaysago, getdatetime} = require("../utils/datetime")
 
 //  #region ADMIN
 
@@ -80,12 +81,14 @@ exports.viewplayermessage = async (req, res) => {
     const inboxdata = []
 
     messages.forEach(data => {
-        const {type, rewards, title, description} = data
+        const {type, rewards, title, description, createdAt} = data
         inboxdata.push({
             type: type,
             rewards: rewards,
             title: title,
-            description: description
+            description: description,
+            daysago: getdaysago(createdAt),
+            datetime: getdatetime(createdAt),
         })
     })
 
