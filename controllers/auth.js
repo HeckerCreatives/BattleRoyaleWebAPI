@@ -3,6 +3,8 @@ const Userdetails = require("../models/Userdetails")
 const Staffusers = require("../models/Staffusers")
 const PlayerCharacterSetting = require("../models/Playercharactersettings")
 const Wallets = require("../models/Wallets")
+const Usergamedetails = require("../models/Usergamedetails")
+const Leaderboard = require("../models/Leaderboard")
 const fs = require('fs')
 
 const bcrypt = require('bcrypt');
@@ -72,6 +74,40 @@ exports.register = async (req, res) => {
         await Userdetails.findOneAndDelete({owner: new mongoose.Types.ObjectId(player._id)})
 
         await PlayerCharacterSetting.findOneAndDelete({owner: new mongoose.Types.ObjectId(player._id)})
+
+        console.log(`There's a problem creating user details for ${player._id} Error: ${err}`)
+
+        return res.status(400).json({ message: "bad-request", data: "There's a problem registering your account. Please try again." })
+    })
+
+    await Usergamedetails.create({owner: new mongoose.Types.ObjectId(player._id), kill: 0, death: 0, level: 1, xp: 0})
+    .catch(async err => {
+
+        await Users.findOneAndDelete({_id: new mongoose.Types.ObjectId(player._id)})
+
+        await Userdetails.findOneAndDelete({owner: new mongoose.Types.ObjectId(player._id)})
+
+        await PlayerCharacterSetting.findOneAndDelete({owner: new mongoose.Types.ObjectId(player._id)})
+        
+        await Wallets.findOneAndDelete({owner: new mongoose.Types.ObjectId(player._id)})
+
+        console.log(`There's a problem creating user details for ${player._id} Error: ${err}`)
+
+        return res.status(400).json({ message: "bad-request", data: "There's a problem registering your account. Please try again." })
+    })
+
+    await Leaderboard.create({owner: new mongoose.Types.ObjectId(player._id), amount: 0})
+    .catch(async err => {
+
+        await Users.findOneAndDelete({_id: new mongoose.Types.ObjectId(player._id)})
+
+        await Userdetails.findOneAndDelete({owner: new mongoose.Types.ObjectId(player._id)})
+
+        await PlayerCharacterSetting.findOneAndDelete({owner: new mongoose.Types.ObjectId(player._id)})
+        
+        await Wallets.findOneAndDelete({owner: new mongoose.Types.ObjectId(player._id)})
+        
+        await Usergamedetails.findOneAndDelete({owner: new mongoose.Types.ObjectId(player._id)})
 
         console.log(`There's a problem creating user details for ${player._id} Error: ${err}`)
 
