@@ -9,6 +9,7 @@ const routers = app => {
     app.use("/maintenance", require("./maintenance"))
     app.use("/characters", require("./playercharactersettings"))
     app.use("/uploads", require("./uploads"))
+    app.use("/content", require('./content'))
 }
 
 module.exports = routers
