@@ -1,8 +1,9 @@
-const router = require("express").Router()
-const { changepassword } = require("../controllers/staffusers")
-const { protectsuperadmin } = require("../middleware/middleware")
+const router = require("express").Router();
+
+const { changepassword } = require("../controllers/staffuser");
+const { protectsuperadmin } = require("../middleware/middleware");
 
 router
-    .post("/changepassword", protectsuperadmin, changepassword)
+ .post("/changepassword", protectsuperadmin, changepassword)
 
-module.exports = router;
+ module.exports = router

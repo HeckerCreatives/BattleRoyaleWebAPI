@@ -1,15 +1,18 @@
 const routers = app => {
     console.log("Routers are all available");
 
-    app.use("/auth", require("./auth"))
-    app.use("/user", require("./user"))
-    app.use("/news", require("./news"))
-    app.use("/inbox", require("./inbox"))
-    app.use("/staffusers", require("./staffusers"))
-    app.use("/maintenance", require("./maintenance"))
-    app.use("/characters", require("./playercharactersettings"))
-    app.use("/uploads", require("./uploads"))
-    app.use("/content", require('./content'))
-}
+    app.use("/auth", require("./auth"));  // <-- Pass io here
+    app.use("/user", require("./user"));
+    app.use("/inbox", require("./inbox"));
+    app.use("/staffusers", require("./staffusers"));
+    app.use("/subscription", require("./subscription"));
+    app.use("/maintenance", require("./maintenance"));
+    app.use("/news", require("./news"));
+    app.use("/newsletter", require("./newsletter"));
+    app.use("/content", require('./content'));
+    app.use("/uploads", require('./picture'));
+};
 
-module.exports = routers
+module.exports = routers;
+
+

@@ -1,138 +1,79 @@
-const { default: mongoose } = require("mongoose")
+
 const Inbox = require("../models/Inbox")
 const Users = require("../models/Users")
-const {getdaysago, getdatetime} = require("../utils/datetime")
 
-//  #region ADMIN
+const { default: mongoose } = require("mongoose");
 
-exports.newsmessage = async (req, res) => {
-    const {id, username} = req.user
-    const {title, description} = req.body
 
-    const userdata = await Users.find()
-    .then(data => data)
-    .catch(err => {
-        console.log(`Server error: ${err}`)
+exports.viewPlayerMessage = async (req, res) => {
+    const { userid } = req.query
 
-        return res.status(400).json({ message: "bad-request", data: "There's a problem with the server please try again later"})
-    });
 
-    if (userdata.length <= 0){
-        return res.json({message: "success"})
+    if(!userid){
+    return res.status(400).json({ message: "Failed", data: "Please input userid" })
     }
 
-    const messages = []
+    const inboxData = await Inbox.find({ owner: new mongoose.Types.ObjectId(userid)})
+    .then(data => data)
+    .catch(err => {
+        console.log(`There's a problem fetching inbox data for user: ${userid} Error: ${err}`)
+        return res.status(400).json({ message: "bad-request", data: "There's a problem with the server. Please try again." })
+    })
 
-    userdata.forEach(users => {
-        const {_id} = users
+    const totalInbox = await Inbox.countDocuments({ owner: new mongoose.Types.ObjectId(userid)})
+    .then(data => data)
+    .catch(err => {
+        console.log(`There's a problem encountered while fetching user inbox. Error: ${err}`)
 
-        messages.push({
-            insertOne: {
-                document: {
-                    owner: new mongoose.Types.ObjectId(_id),
-                    type: "news",
-                    rewards: [],
-                    title: title,
-                    description: description,
-                    status: "unopen"
-                }
+        return res.status(400).json({ message: "bad-request", data: "There's a problem with the server. Please contact support for more details"})
+    });
+
+
+
+    const data = {
+        inbox: inboxData,
+        totalInbox: totalInbox
+    }
+
+
+    return res.json({message:"success", data: data})
+}
+
+
+exports.messagePlayers = async (req, res) => {
+    const { type, title, description } = req.body
+
+    if(!type || !title || !description) {
+        return res.status(400).json({ message:"Failed", data: "Incomplete input fields"})
+    }
+   
+    const users = await Users.find({}, '_id')
+    .then(data => data)
+    .catch(err => {
+        console.log(`There's a problem encountered while fetching all users for mass news. Error ${err}`)
+
+        return res.status(400).json({ message: "bad-request", data: "There's a problem with the server. Please try again later."})
+    }) 
+
+    const bulkOperations = users.map(user => ({
+        insertOne: {
+            document: {
+                owner: user._id,
+                type: type,
+                title: title,
+                description: description,
+                rewards: [],
+                status: "unopen"
             }
-        })
-    })
-
-    await Inbox.bulkWrite(messages)
-
-    return res.json({message: "success"})
-}
-
-exports.viewplayermessage = async (req, res) => {
-    const {id, username} = req.user
-    const {userid} = req.query
-    const pageOptions = {
-        page: parseInt(req.query.page) || 0,
-        limit: parseInt(req.query.limit) || 10
-    }
-
-    const messages = await Inbox.find({owner: new mongoose.Types.ObjectId(userid)})
-    .skip(pageOptions.page * pageOptions.limit)
-    .limit(pageOptions.limit)
-    .sort({'createdAt': -1})    
+        }
+    }))
+    
+    await Inbox.bulkWrite(bulkOperations)
     .then(data => data)
     .catch(err => {
-        console.log(`Server error: ${err}`)
-
-        return res.status(400).json({ message: "bad-request", data: "There's a problem with the server please try again later"})
-    });
-
-    if (messages.length <= 0){
-        return res.json({message: "success", data: {totalpages: 0, inbox: []}})
-    }
-
-    const counthistory = await Inbox.countDocuments({owner: new mongoose.Types.ObjectId(userid)})
-    .then(data => data)
-    .catch(err => {
-        console.log(`Server error: ${err}`)
-
-        return res.status(400).json({ message: "bad-request", data: "There's a problem with the server please try again later"})
+        console.log(`There's a problem encountered while creating inbox message. Error: ${err}`)
+        return res.status(400).json({ message: "bad-request", data: "There's a problem with the server. Please try again later."})
     })
-
-    const totalpages = Math.ceil(counthistory / pageOptions.limit)
-
-    const inboxdata = []
-
-    messages.forEach(data => {
-        const {type, rewards, title, description, createdAt} = data
-        inboxdata.push({
-            type: type,
-            rewards: rewards,
-            title: title,
-            description: description,
-            daysago: getdaysago(createdAt),
-            datetime: getdatetime(createdAt),
-        })
-    })
-
-    return res.json({message: "success", data: {totalpages: totalpages, inbox: inboxdata}})
+    
+    return res.json({ message: "success" });
 }
-
-exports.messageplayers = async (req, res) => {
-    const {id, username} = req.user
-    const {type, title, description} = req.body
-
-    const userdata = await Users.find()
-    .then(data => data)
-    .catch(err => {
-        console.log(`Server error: ${err}`)
-
-        return res.status(400).json({ message: "bad-request", data: "There's a problem with the server please try again later"})
-    });
-
-    if (userdata.length <= 0){
-        return res.json({message: "success"})
-    }
-
-    const messages = []
-
-    userdata.forEach(users => {
-        const {_id} = users
-
-        messages.push({
-            insertOne: {
-                document: {
-                    owner: new mongoose.Types.ObjectId(_id),
-                    type: type,
-                    rewards: [],
-                    title: title,
-                    description: description,
-                    status: "unopen"
-                }
-            }
-        })
-    })
-
-    await Inbox.bulkWrite(messages)
-
-    return res.json({message: "success"})
-}
-
-//  #endregion

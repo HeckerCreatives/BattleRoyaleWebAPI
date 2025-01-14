@@ -3,7 +3,7 @@ const Staffusers = require("../models/Staffusers")
 
 exports.initialize = async (req, res) => {
 
-    //  INITIALIZE CREATURE SMASH USER
+
     const staff = await Staffusers.find()
     .then(data => data)
     .catch(err => {

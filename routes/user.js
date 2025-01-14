@@ -1,17 +1,19 @@
-const router = require("express").Router()
-const { getuserdetails, changepassworduser, getplayerlist, updateuserprofile, banunbanuser, getplayercount, getplayersbystatus, getregistrationcount, getuserregistrationchart, changepasswordforadmin } = require("../controllers/user")
-const { protectplayer, protectsuperadmin } = require("../middleware/middleware")
+const router = require("express").Router();
+
+const { getPlayerList, changeplayerpassword, banunbanuser, getUserDetails, changeUserPassword, updateUserProfile, registrationGraph, getRegistrationCount } = require("../controllers/user")
+const { protectsuperadmin, protectplayer } = require("../middleware/middleware")
+
 
 router
-    .get("/getuserdetails", protectplayer, getuserdetails)
-    .post("/changepassworduser", protectplayer, changepassworduser)
-    .get("/getplayerlist", protectsuperadmin, getplayerlist)
-    .post("/updateuserprofile", protectplayer, updateuserprofile)
-    .post("/banunbanuser", protectsuperadmin, banunbanuser)
-    .get("/getplayercount", protectsuperadmin, getplayercount)
-    .get("/getplayerbystatus", protectsuperadmin, getplayersbystatus)
-    .get("/getregistrationcount", protectsuperadmin, getregistrationcount)
-    .get("/getuserregistrationchart", protectsuperadmin, getuserregistrationchart)
-    .post("/changeplayerpasswordadmin", protectsuperadmin, changepasswordforadmin)
-    
+ .get("/getplayerlist", protectsuperadmin, getPlayerList)
+ .get("/getuserdetails", protectplayer, getUserDetails)
+ .post("/changeplayerpassword", protectsuperadmin, changeplayerpassword)
+ .post("/banunbanuser", protectsuperadmin, banunbanuser)
+ .post("/changeuserpassword", protectplayer, changeUserPassword)
+ .post("/updateuserprofile", protectplayer, updateUserProfile)
+ .get("/getuserregistrationchart", protectsuperadmin, registrationGraph)
+ .get("/getregistrationcount", protectsuperadmin, getRegistrationCount)
+
+
+
 module.exports = router;

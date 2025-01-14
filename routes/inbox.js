@@ -1,10 +1,9 @@
-const router = require("express").Router()
-const { newsmessage, viewplayermessage, messageplayers } = require("../controllers/inbox")
-const { protectsuperadmin } = require("../middleware/middleware")
+const router = require("express").Router();
+const { viewPlayerMessage, messagePlayers } = require('../controllers/inbox');
+const { protectsuperadmin } = require("../middleware/middleware");
 
 router
-    .get("/viewplayermessage", protectsuperadmin, viewplayermessage)
-    .post("/newsmessage", protectsuperadmin, newsmessage)
-    .post("/messageplayers", protectsuperadmin, messageplayers)
-
+ .get("/viewplayermessage", protectsuperadmin, viewPlayerMessage)
+ .post("/newsmessage", protectsuperadmin, messagePlayers)
+ 
 module.exports = router;

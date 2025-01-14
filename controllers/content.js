@@ -25,23 +25,24 @@ exports.createContent = async (req, res) => {
 exports.massMapContent = async (req, res) => {
     const { id } = req.user
 
-    const mapcontentt = req.body.mapObjectArray
+    const mapcontentt = Array.isArray(req.body.mapObjectArray)
+    ? req.body.mapObjectArray
+    : [req.body.mapObjectArray];
 
-    let index = 0
-    let mapContentData = []
+    let index = 0;
+    let mapContentData = [];
 
     mapcontentt.forEach(item => {
         const parsedItem = JSON.parse(item);
-        
         mapContentData.push({
-            owner: id,
-            title: parsedItem.title,
-            description: parsedItem.description,
-            type: parsedItem.type,
-            link: req.files[index].path
-        })
-
-    })
+        owner: id,
+        title: parsedItem.title,
+        description: parsedItem.description,
+        type: parsedItem.type,
+        link: req.files[index]?.path  // Ensure req.files[index] exists before accessing .path
+        });
+        index++;
+    });
 
 
     const mapBulkWrite = mapContentData.map(data => ({
@@ -137,4 +138,37 @@ exports.getContent = async (req, res) => {
     })
 
     return res.status(200).json({ message: "success", data: finalData})
+}
+
+
+exports.editMapContent = async (req, res) => {
+
+    const { id } = req.user
+    const { mapid } = req.query
+    const mapcontentt = req.body.mapObjectArray
+    
+    const parsedItem = JSON.parse(mapcontentt);
+    
+    const mapContentData = {
+        owner: id,
+        id: mapid,
+        title: parsedItem.title,
+        description: parsedItem.description,
+        type: parsedItem.type,
+        link: req.file?.path || parsedItem.url
+    }
+
+    if(!mapContentData.title || !mapContentData.description || !mapContentData.type || !mapContentData.id) {
+        return res.status(400).json({ message: "failed", data: "Please input all data."})
+    }
+
+    await Content.findOneAndUpdate({ _id: new mongoose.Types.ObjectId(mapContentData.id)},{ title: mapContentData.title, description: mapContentData.description, type: mapContentData.type, link: mapContentData.link})
+    .then(data => data)
+    .catch(err => {
+        console.log(`There's a problem encountered while creating Content. Error: ${err}.`)
+
+        return res.status(400).json({ message: "bad-request", data: "There's a problem with the server. Please try again later."})
+    })
+
+    return res.status(200).json({ message: "success"})
 }

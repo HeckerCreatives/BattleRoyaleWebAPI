@@ -4,11 +4,12 @@ const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
 const http = require("http");
 const cors = require("cors");
+const socketIo = require("socket.io");
 require("dotenv").config();
 
 const app = express();
 
-const {initialize} = require("./initialization/serverinitialize")
+const {initialize} = require("./initialization/initialize")
 
 const CORS_ALLOWED = process.env.ALLOWED_CORS
 
@@ -22,6 +23,12 @@ const corsConfig = {
 
 app.use(cors(corsConfig));
 const server = http.createServer(app);
+const io = socketIo(server, {
+  cors: {
+      origin: process.env.ALLOWED_CORS.split(" "),
+      methods: ["GET", "POST"],
+  },
+});
 
 mongoose
   .connect(process.env.DATABASE_URL, {
@@ -39,9 +46,39 @@ app.use(bodyParser.json({ limit: "50mb" }))
 app.use(bodyParser.urlencoded({ limit: "50mb", extended: false, parameterLimit: 50000 }))
 app.use(cookieParser());
 
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
+const activeUsers = new Map();
+
+io.on("connection", (socket) => {
+    console.log(`Socket connected: ${socket.id}`);
+
+    socket.on("login", (id) => {
+      let userId = id.toLowerCase()
+
+        console.log(`User ${userId} attempting to log in`);
+
+        if (activeUsers.has(userId)) {
+            io.to(userId).emit("dual", {
+                message: "Your account was accessed from another location. You have been logged out.",
+            });
+            console.log(`Emitted message to ${userId} dual log in`)
+        }
+
+        activeUsers.set(userId, socket);
+
+        socket.join(userId);
+
+        console.log(`User ${userId} added to the active users room`);
+    });
+
+});
+
 // Routes
 require("./routes")(app);
 
 
-const port = process.env.PORT || 5000; // Dynamic port for deployment
+const port = process.env.PORT || 5001; // Dynamic port for deployment
 server.listen(port, () => console.log(`Server is running on port: ${port}`));
