@@ -1,6 +1,6 @@
 const router = require("express").Router();
 
-const { getnewslist, createNews, editNews, deleteNews, messageNews } = require("../controllers/news")
+const { getnewslist, createNews, editNews, deleteNews, messageNews } = require("../controllers/News")
 
 const { protectsuperadmin } = require("../middleware/middleware")
 
