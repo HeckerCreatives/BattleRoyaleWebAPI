@@ -29,7 +29,7 @@ exports.register = async (req, res) => {
     if(!email || !username || !password || !country){
         return res.status(400).json({ message: "failed", data: "Please enter all user details."})
     }
-    if(username.length < 6 || username.length > 15){
+    if(username.length < 5 || username.length > 15){
         return res.status(400).json({ message: "failed", data: "Minimum of 5 and maximum of 20 characters only for password! Please try again."})
     }
     if(password.length < 5 || password.length > 20){
