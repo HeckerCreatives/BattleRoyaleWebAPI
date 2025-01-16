@@ -403,6 +403,12 @@ exports.changeUserPassword = async (req, res) => {
         return res.status(400).json({ message: "bad-request", data: "There's a problem with the server. Please contact support for more details"})
     })
     
+    const passwordRegex = /^[a-zA-Z0-9@\[\]]+$/;
+
+    if(!passwordRegex.test(newPassword)){
+        return res.status(400).json({ message: "failed", data: "Special characters in the password are not allowed. Only @, [, and ] are permitted." })
+    }
+
     const isSamePassword = await comparePassword(oldpw.password, newPassword)
     
     

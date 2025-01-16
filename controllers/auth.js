@@ -43,9 +43,16 @@ exports.register = async (req, res) => {
     })
     const usernameRegex = /^[a-zA-Z0-9]+$/;
 
+    const passwordRegex = /^[a-zA-Z0-9@\[\]]+$/;
+
+    if(!passwordRegex.test(password)){
+        return res.status(400).json({ message: "failed", data: "Special characters in the password are not allowed. Only @, [, and ] are permitted." })
+    }
     if(!usernameRegex.test(username)){
         return res.status(400).json({ message: "failed", data: "Special characters in username are not allowed."})
     }
+
+
     if(usernameExists){
         return res.status(400).json({ message: "bad-request", data: "Username has already been used."})
     }
