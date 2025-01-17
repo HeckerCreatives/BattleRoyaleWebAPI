@@ -12,6 +12,8 @@ const routers = app => {
     app.use("/staffusers", require("./staffusers"));
     app.use("/uploads", require('./picture'));
     app.use("/user", require("./user"));
+    app.use("/usergamedetails", require("./usergamedetails"))
+    app.use("/leaderboard", require("./leaderboard"))
 };
 
 module.exports = routers;
