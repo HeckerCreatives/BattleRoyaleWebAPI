@@ -1,6 +1,7 @@
 const StaffUser = require("../models/Staffusers")
 const Maintenance = require("../models/Maintenance")
 const { default: mongoose } = require("mongoose")
+const Sociallinks = require("../models/Sociallinks")
 
 
 exports.initialize = async () => {
@@ -35,9 +36,35 @@ exports.initialize = async () => {
         }));
 
 
-        await Maintenance.bulkWrite(maintenanceBulkWrite);
+        await Maintenance.bulkWrite(maintenanceBulkWrite)
+        .catch(err => {
+            console.log(`Error creating maintenance data: ${err}`)
+            return
+        }) 
     }
 
+    const sociallinks = await Sociallinks.find()
+    .then(data => data)
+    .catch(err => {
+        console.log(`Error finding Social Links data: ${err}`)
+    })
+
+
+    if(sociallinks.length <= 0){
+        const socialinksdata = ["facebook", "twitter(x)", "youtube", "discord", "telegram", "instagram", "linkedin", "tiktok", "reddit"]
+
+        const socialinksbulkwrite = socialinksdata.map(titles => ({
+            insertOne: {
+                document: { title: titles, value: ""}
+            }
+        }))
+
+        await Sociallinks.bulkWrite(socialinksbulkwrite)
+        .catch(err => {
+            console.log(`Error creating social links data: ${err}`)
+            return
+        }) 
+    }
 
     console.log("SERVER DATA INITIALIZED")
 }
