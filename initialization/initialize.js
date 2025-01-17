@@ -55,7 +55,7 @@ exports.initialize = async () => {
 
         const socialinksbulkwrite = socialinksdata.map(titles => ({
             insertOne: {
-                document: { title: titles, value: ""}
+                document: { title: titles, link: "a"}
             }
         }))
 
