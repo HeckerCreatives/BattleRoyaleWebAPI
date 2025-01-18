@@ -1,5 +1,6 @@
 const { default: mongoose } = require("mongoose")
 const Usergamedetails = require("../models/Usergamedetails")
+const Leaderboard = require("../models/Leaderboard")
 
 exports.getusergamedetails = async (req, res) => {
     const {id, username} = req.user
@@ -12,11 +13,38 @@ exports.getusergamedetails = async (req, res) => {
         return res.status(400).json({message: "bad-request", data: "There's a problem getting the user game details"})
     })
 
+    const lbdata = await Leaderboard.find()
+    .populate({
+        path: "owner",
+        select: "username"
+    })
+    .limit(50)
+    .sort({amount: -1})
+    .then(data => data)
+    .catch(err => {
+        console.log(`There's a problem getting the leaderboard`)
+    })
+
+    let tempindex = 0;
+    let userRank = null;
+
+
+    lbdata.forEach(tempdata => {
+        const {owner, amount} = tempdata
+
+        if(owner._id.toString() === id.toString()){
+            userRank = tempindex + 1
+        }
+
+        tempindex++;
+    })
+
     const data = {
         kill: usergamedata.kill,
         death: usergamedata.death,
         level: usergamedata.level,
-        xp: usergamedata.xp
+        xp: usergamedata.xp,
+        userrank: userRank,
     }
 
     return res.json({message: "success", data: data})
