@@ -51,11 +51,11 @@ exports.initialize = async () => {
 
 
     if(sociallinks.length <= 0){
-        const socialinksdata = ["facebook", "twitter(x)", "youtube", "discord", "telegram", "instagram", "linkedin", "tiktok", "reddit"]
+        const socialinksdata = ["facebook", "discord", "telegram", "tiktok"]
 
         const socialinksbulkwrite = socialinksdata.map(titles => ({
             insertOne: {
-                document: { title: titles, link: "a"}
+                document: { title: titles, link: ""}
             }
         }))
 

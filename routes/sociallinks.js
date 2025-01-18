@@ -5,6 +5,7 @@ const router = require("express").Router()
 
 router
 .get("/getsociallinks", protectsuperadmin, getsociallinks)
+.get("/getsociallinksa", getsociallinks)
 .get("/getspecificsociallink", getspecificsociallink)
 .get("/deletesociallink",protectsuperadmin, deletesociallink)
 .post("/createsociallink", protectsuperadmin, createsociallink)
