@@ -13,30 +13,24 @@ exports.getusergamedetails = async (req, res) => {
         return res.status(400).json({message: "bad-request", data: "There's a problem getting the user game details"})
     })
 
-    const lbdata = await Leaderboard.find()
-    .populate({
-        path: "owner",
-        select: "username"
-    })
-    .limit(50)
-    .sort({amount: -1})
+    //  step 1: get the leaderboard user amount
+
+    const lbvalue = await Leaderboard.findOne({owner: new mongoose.Types.ObjectId(id)})
     .then(data => data)
     .catch(err => {
-        console.log(`There's a problem getting the leaderboard`)
+        console.log(`There's a problem getting the user value leaderboard`)
+
+        return res.status(400).json({message: "bad-request", data: "There's a problem with the server. Please try again later"})
     })
 
-    let tempindex = 0;
-    let userRank = null;
+    //  step 2: get the real rank of user
 
+    const rankvalue = await Leaderboard.countDocuments({amount: {$gte: lbvalue.amount}})
+    .then(data => data)
+    .catch(err => {
+        console.log(`There's a problem getting the user rank leaderboard`)
 
-    lbdata.forEach(tempdata => {
-        const {owner, amount} = tempdata
-
-        if(owner._id.toString() === id.toString()){
-            userRank = tempindex + 1
-        }
-
-        tempindex++;
+        return res.status(400).json({message: "bad-request", data: "There's a problem with the server. Please try again later"})
     })
 
     const data = {
@@ -44,7 +38,7 @@ exports.getusergamedetails = async (req, res) => {
         death: usergamedata.death,
         level: usergamedata.level,
         xp: usergamedata.xp,
-        userrank: userRank,
+        userrank: rankvalue,
     }
 
     return res.json({message: "success", data: data})
