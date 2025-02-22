@@ -45,9 +45,9 @@ exports.editnewsletter = async (req, res) => {
 exports.createnewsletter = async (req, res) => {    
     const { id } = req.user;
 
-    const { title, description } = req.body;
+    const { title, description, type } = req.body;
 
-    if(!title || !description){
+    if(!title || !description || !type) {
         return res.status(400).json({ message: "failed", data: "Incomplete input fields."})
     }
     let bannerimg = "";
@@ -58,7 +58,7 @@ exports.createnewsletter = async (req, res) => {
         return res.json({message: "failed", data: "Please select an image first!"})
     }
 
-     await Newsletter.create({ owner: id, title: title, description: description, banner: bannerimg})
+     await Newsletter.create({ owner: id, title: title, description: description, banner: bannerimg, type: type})
      .then(data => data)
      .catch(err => {
         console.log(`There's a problem encourted while creating newsletter. Error: ${err}`)
@@ -70,15 +70,21 @@ exports.createnewsletter = async (req, res) => {
 
 
 exports.getnewsletterlist = async (req, res) => {
-    const { page, limit } = req.query
+    const { page, limit, filter } = req.query
 
     const pageOptions = {
         page: parseInt(page) || 0,
         limit: parseInt(limit) || 10,
     }
 
+    let filterstage = {}
+
+    if(filter) {
+        filterstage = { type: filter }
+    }
+
     const newsListPipeline = [
-        { $match: {} }, 
+        ...(filter ? [ { $match: filterstage }] : []),
         { $sort: { createdAt: -1 } }, 
         { $skip: pageOptions.page * pageOptions.limit },
         { $limit: pageOptions.limit }

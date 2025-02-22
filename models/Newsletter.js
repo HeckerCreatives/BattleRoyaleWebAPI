@@ -14,6 +14,9 @@ const NewsletterSchema = new mongoose.Schema(
         },
         banner: {
             type: String
+        },
+        type: {
+            type: String,
         }
     },
     {
