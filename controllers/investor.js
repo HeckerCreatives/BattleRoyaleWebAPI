@@ -24,7 +24,7 @@ exports.subscribeinvestor = async (req, res) => {
     })
     .then(data => data)
     .catch(err => {
-        console.log(`There's a problem encountered while creating investor subscription. Error: ${err}`)
+        console.log(`There's a problem encountered while creating investor Investor. Error: ${err}`)
         return res.status(400).json({ message: "failed", data: "There's a problem with the server! Please contact customer support for more details."})
     })
 
@@ -116,6 +116,41 @@ exports.deleteinvestor = async (req, res) => {
     });
 
 }
+exports.deletemultipleinvestors = async (req, res) => {
+    const { investorids } = req.body;
+
+    if (!investorids || !Array.isArray(investorids) || investorids.length === 0) {
+        return res.status(400).json({
+            message: "failed",
+            data: "investor IDs are required and must be provided as an array.",
+        });
+    }
+
+    const ids = investorids.map(id => new mongoose.Types.ObjectId(id));
+
+    await Investor.deleteMany({ _id: { $in: ids } })
+        .then(deletionResult => {
+            if (deletionResult.deletedCount === 0) {
+                return res.status(404).json({
+                    message: "failed",
+                    data: "No investors found for the provided IDs.",
+                });
+            }
+
+            return res.status(200).json({
+                message: "success",
+                data: `Successfully deleted ${deletionResult.deletedCount} subscriber(s).`,
+            });
+        })
+        .catch(err => {
+            console.error(`Error while deleting investors. Error: ${err}`);
+            return res.status(500).json({
+                message: "bad-request",
+                data: "There's a problem with the server. Please contact support for more details.",
+            });
+        });
+};
+
 
 
 exports.getinvestors = async (req, res) => {
