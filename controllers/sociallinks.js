@@ -3,16 +3,17 @@ const Sociallinks = require("../models/Sociallinks")
 
 
 exports.createsociallink = async (req, res) => {
-    const { title, link } = req.body
+    const { title, link, type } = req.body
 
-    if(!title || !link){
+    if(!title || !link || !type){
         return res.status(400).json({ message: "failed", data: "Please input title and link."})
     }
 
 
     await Sociallinks.create({
         title,
-        link
+        link,
+        type
     })
     .then(data => {
         if(!data){
@@ -27,7 +28,7 @@ exports.createsociallink = async (req, res) => {
 }
 
 exports.editsociallink = async (req, res) => {
-    const { id, title, link } = req.body
+    const { id, title, link, type } = req.body
     if(!title || !link || !id){
         return res.status(400).json({ message: "failed", data: "Please input title, link and social link to edit."})
     }
@@ -37,7 +38,8 @@ exports.editsociallink = async (req, res) => {
         },
         {
         title,
-        link
+        link, 
+        type
         }
     )
     .then(data => {
@@ -71,14 +73,20 @@ exports.deletesociallink = async (req, res) => {
 }
 
 exports.getsociallinks = async (req, res) => {
-    const { page, limit } = req.query
+    const { page, limit, filter } = req.query
 
     const pageOptions = {
         page: parseInt(page) || 0,
         limit: parseInt(limit) || 10,
     }
-    
-    await Sociallinks.find()
+
+    let query = {}
+
+    if(filter){
+        query = { type: filter }
+    }
+
+    await Sociallinks.find(query)
     .skip(pageOptions.page * pageOptions.limit)
     .limit(pageOptions.limit)   
     .then(data => {

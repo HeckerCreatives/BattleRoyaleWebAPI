@@ -10,7 +10,11 @@ const SocialLinksSchema = new mongoose.Schema(
         title: { // Facebook, Instagram, X, Threads, Tiktok, Youtube, etc...
             type: String,
             index: true,
-        }
+        },
+        type: {
+            type: String,
+            index: true,
+        },
     },
     {
         timestamps: true,
