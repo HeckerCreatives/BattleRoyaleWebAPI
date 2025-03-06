@@ -58,14 +58,14 @@ exports.createnewsletter = async (req, res) => {
         return res.json({message: "failed", data: "Please select an image first!"})
     }
 
-     await Newsletter.create({ owner: id, title: title, description: description, banner: bannerimg, type: type})
+     const data = await Newsletter.create({ owner: id, title: title, description: description, banner: bannerimg, type: type})
      .then(data => data)
      .catch(err => {
         console.log(`There's a problem encourted while creating newsletter. Error: ${err}`)
         return res.status(400).json({ message: "Bad-request", data: "There's a problem with the server. Please contact support for more details."})
      })
 
-     return res.status(200).json({ message: "success" })
+     return res.status(200).json({ message: "success", data: data.banner })
 }
 
 
