@@ -9,8 +9,8 @@ const upload = require("../middleware/uploadpics")
 const uploadimg = upload.single("bannerimg")
 
 router
- .get("/getnewslist", protectsuperadmin, getnewslist)
- .get("/deletenews", protectsuperadmin, deleteNews)
+.get("/getnewslist", getnewslist)
+.get("/deletenews", protectsuperadmin, deleteNews)
  .post("/messagenews", protectsuperadmin, messageNews)
  .post("/createnews", protectsuperadmin, function (req, res, next) {
     uploadimg(req, res, function(err){
