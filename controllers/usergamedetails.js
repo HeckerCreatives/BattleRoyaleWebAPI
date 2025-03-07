@@ -44,6 +44,50 @@ exports.getusergamedetails = async (req, res) => {
     return res.json({message: "success", data: data})
 }
 
+exports.getusergamedetailssuperadmin = async (req, res) => {
+    const {id, username} = req.user
+
+    const {userid} = req.query
+    
+    const usergamedata = await Usergamedetails.findOne({owner: new mongoose.Types.ObjectId(userid)})
+    .then(data => data)
+    .catch(err => {
+        console.log(`There's a problem getting the user game details for ${username}. Error: ${err}`)
+
+        return res.status(400).json({message: "bad-request", data: "There's a problem getting the user game details"})
+    })
+
+    //  step 1: get the leaderboard user amount
+
+    const lbvalue = await Leaderboard.findOne({owner: new mongoose.Types.ObjectId(userid)})
+    .then(data => data)
+    .catch(err => {
+        console.log(`There's a problem getting the user value leaderboard`)
+
+        return res.status(400).json({message: "bad-request", data: "There's a problem with the server. Please try again later"})
+    })
+
+    //  step 2: get the real rank of user
+
+    const rankvalue = await Leaderboard.countDocuments({amount: {$gte: lbvalue.amount}})
+    .then(data => data)
+    .catch(err => {
+        console.log(`There's a problem getting the user rank leaderboard`)
+
+        return res.status(400).json({message: "bad-request", data: "There's a problem with the server. Please try again later"})
+    })
+
+    const data = {
+        kill: usergamedata.kill,
+        death: usergamedata.death,
+        level: usergamedata.level,
+        xp: usergamedata.xp,
+        userrank: rankvalue,
+    }
+
+    return res.json({message: "success", data: data})
+}
+
 
 exports.updateusergamedetails = async (req, res) => {
 
