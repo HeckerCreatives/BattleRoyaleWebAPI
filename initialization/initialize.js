@@ -55,8 +55,6 @@ exports.initialize = async () => {
             { title: "telegram", link: "", type: "user" },
             { title: "instagram", link: "", type: "user" },
             { title: "x", link: "", type: "user" },
-            { title: "instagram", link: "", type: "investor" },
-            { title: "x", link: "", type: "investor" }
         ]
 
         const socialinksbulkwrite = socialinksdata.map(data => ({
