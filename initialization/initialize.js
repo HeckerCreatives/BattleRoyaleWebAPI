@@ -50,7 +50,7 @@ exports.initialize = async () => {
     })
 
 
-    if(sociallinks.length <= 3){
+    if(sociallinks.length <= 0){
         const socialinksdata = [
             { title: "telegram", link: "", type: "user" },
             { title: "instagram", link: "", type: "user" },
