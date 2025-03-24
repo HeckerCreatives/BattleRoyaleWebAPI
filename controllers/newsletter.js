@@ -1,5 +1,6 @@
 const Newsletter = require("../models/Newsletter")
 const Users = require("../models/Users")
+const { sendmailuser, sendmailinvestor } = require("../utils/nodemailer")
 
 
 exports.deletenewsletter = async (req, res) => {
@@ -45,7 +46,7 @@ exports.editnewsletter = async (req, res) => {
 exports.createnewsletter = async (req, res) => {    
     const { id } = req.user;
 
-    const { title, description, type } = req.body;
+    const { title, description, type, html } = req.body;
 
     if(!title || !description || !type) {
         return res.status(400).json({ message: "failed", data: "Incomplete input fields."})
@@ -58,12 +59,31 @@ exports.createnewsletter = async (req, res) => {
         return res.json({message: "failed", data: "Please select an image first!"})
     }
 
+    if(type.toLowerCase() == "user") {
+        const sendmail = await sendmailuser(html, title)
+        
+        if(sendmail !== "success"){
+            return res.status(400).json({ message: "failed", data: "There's a problem with the server. Please contact support for more details."})
+        }
+    } else if (type.toLowerCase() == "investor") {
+        const sendmail = await sendmailinvestor(html, title)
+
+        if(sendmail !== "success"){
+            return res.status(400).json({ message: "failed", data: "There's a problem with the server. Please contact support for more details."})
+        }
+    
+    } else {
+        return res.status(400).json({ message: "failed", data: "Invalid type. Please select either user or investor."})
+    }
+
      const data = await Newsletter.create({ owner: id, title: title, description: description, banner: bannerimg, type: type})
      .then(data => data)
      .catch(err => {
         console.log(`There's a problem encourted while creating newsletter. Error: ${err}`)
         return res.status(400).json({ message: "Bad-request", data: "There's a problem with the server. Please contact support for more details."})
      })
+
+
 
      return res.status(200).json({ message: "success", data: data.banner })
 }
