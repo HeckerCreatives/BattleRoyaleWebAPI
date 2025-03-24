@@ -46,7 +46,7 @@ exports.editnewsletter = async (req, res) => {
 exports.createnewsletter = async (req, res) => {    
     const { id } = req.user;
 
-    const { title, description, type, html } = req.body;
+    const { title, description, type } = req.body;
 
     if(!title || !description || !type) {
         return res.status(400).json({ message: "failed", data: "Incomplete input fields."})
@@ -60,13 +60,13 @@ exports.createnewsletter = async (req, res) => {
     }
 
     if(type.toLowerCase() == "user") {
-        const sendmail = await sendmailuser(html, title)
+        const sendmail = await sendmailuser(title, description, bannerimg)
         
         if(sendmail !== "success"){
             return res.status(400).json({ message: "failed", data: "There's a problem with the server. Please contact support for more details."})
         }
     } else if (type.toLowerCase() == "investor") {
-        const sendmail = await sendmailinvestor(html, title)
+        const sendmail = await sendmailinvestor(title, description, bannerimg)
 
         if(sendmail !== "success"){
             return res.status(400).json({ message: "failed", data: "There's a problem with the server. Please contact support for more details."})
