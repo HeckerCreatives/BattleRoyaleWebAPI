@@ -80,5 +80,5 @@ io.on("connection", (socket) => {
 require("./routes")(app);
 
 
-const port = process.env.PORT || 5001; // Dynamic port for deployment
+const port = process.env.PORT || 5008; // Dynamic port for deployment
 server.listen(port, () => console.log(`Server is running on port: ${port}`));

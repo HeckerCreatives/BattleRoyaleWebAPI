@@ -29,8 +29,8 @@ exports.register = async (req, res) => {
     if(!email || !username || !password || !country){
         return res.status(400).json({ message: "failed", data: "Please enter all user details."})
     }
-    if(username.length < 5 || username.length > 15){
-        return res.status(400).json({ message: "failed", data: "Minimum of 5 and maximum of 20 characters only for password! Please try again."})
+    if(username.length < 6 || username.length > 15){
+        return res.status(400).json({ message: "failed", data: "Minimum of 5 and maximum of 15 characters only for username! Please try again."})
     }
     if(password.length < 5 || password.length > 20){
         return res.status(400).json({ message: "failed", data: "Minimum of 5 and maximum of 20 characters only for password! Please try again."})
@@ -43,16 +43,9 @@ exports.register = async (req, res) => {
     })
     const usernameRegex = /^[a-zA-Z0-9]+$/;
 
-    const passwordRegex = /^[a-zA-Z0-9@\[\]]+$/;
-
-    if(!passwordRegex.test(password)){
-        return res.status(400).json({ message: "failed", data: "Special characters in the password are not allowed. Only @, [, and ] are permitted." })
-    }
     if(!usernameRegex.test(username)){
-        return res.status(400).json({ message: "failed", data: "Special characters in username are not allowed."})
+        return res.status(400).json({ message: "failed", data: "Special characters or spaces in username are not allowed."})
     }
-
-
     if(usernameExists){
         return res.status(400).json({ message: "bad-request", data: "Username has already been used."})
     }
@@ -88,6 +81,7 @@ exports.register = async (req, res) => {
         console.log(`There's a problem creating user details for ${username} Error: ${err}`)
         
         await Users.findOneAndDelete({ username: username})
+        await Userdetails.findOneAndDelete({owner: new mongoose.Types.ObjectId(user._id)})
 
         return res.status(400).json({ message: "bad-request", data: "There's a problem in registering account. Please try again."})
     })
@@ -97,6 +91,7 @@ exports.register = async (req, res) => {
         console.log(`There's a problem creating user details for ${username} Error: ${err}`)
         
         await Users.findOneAndDelete({ username: username})
+        await Usergamedetails.findOneAndDelete({owner: new mongoose.Types.ObjectId(user._id)})
 
         return res.status(400).json({ message: "bad-request", data: "There's a problem in registering account. Please try again."})
     })
@@ -105,7 +100,9 @@ exports.register = async (req, res) => {
     .catch(async (err)=> {
         console.log(`There's a problem creating user details for ${username} Error: ${err}`)
         
-        await Users.findOneAndDelete({ username: username})
+        await Users.findOneAndDelete({ username: username })
+        await Usergamedetails.findOneAndDelete({owner: new mongoose.Types.ObjectId(user._id)})
+        await Leaderboard.findOneAndDelete({owner: new mongoose.Types.ObjectId(user._id)})
 
         return res.status(400).json({ message: "bad-request", data: "There's a problem in registering account. Please try again."})
     })
@@ -118,7 +115,27 @@ exports.register = async (req, res) => {
     }));
 
     await Wallets.bulkWrite(walletBulkWrite)
+    .catch(async (err)=> {
+        console.log(`There's a problem creating user details for ${username} Error: ${err}`)
+        
+        await Users.findOneAndDelete({ username: username })
+        await Usergamedetails.findOneAndDelete({owner: new mongoose.Types.ObjectId(user._id)})
+        await Leaderboard.findOneAndDelete({owner: new mongoose.Types.ObjectId(user._id)})
+        await PlayerCharacterSetting.findOneAndDelete({owner: new mongoose.Types.ObjectId(user._id)})
 
+        return res.status(400).json({ message: "bad-request", data: "There's a problem in registering account. Please try again."})
+    })
+
+    await Energy.create({owner: new mongoose.Types.ObjectId(user._id), energy: 10}).catch(async (err)=> {
+        console.log(`There's a problem creating user details for ${username} Error: ${err}`)
+        
+        await Users.findOneAndDelete({ username: username })
+        await Usergamedetails.findOneAndDelete({owner: new mongoose.Types.ObjectId(user._id)})
+        await Leaderboard.findOneAndDelete({owner: new mongoose.Types.ObjectId(user._id)})
+        await PlayerCharacterSetting.findOneAndDelete({owner: new mongoose.Types.ObjectId(user._id)})
+
+        return res.status(400).json({ message: "bad-request", data: "There's a problem in registering account. Please try again."})
+    })
 
     return res.json({ message: "success" })
 
