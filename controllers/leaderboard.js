@@ -41,8 +41,6 @@ exports.getleaderboard = async (req, res) => {
 
     return res.json({message: "success", data: data})
 }
-
-
 exports.updateuserleaderboard = async (req, res) => {
     const {id, username} = req.user
 
@@ -64,4 +62,10 @@ exports.updateuserleaderboard = async (req, res) => {
     })
 
     return res.json({ message: "success" })
+}
+
+exports.resetleaderboard = async (req, res) => {
+    await Leaderboard.updateMany({}, { $set: { amount: 0}})
+
+    return res.json({message: "success"})
 }
