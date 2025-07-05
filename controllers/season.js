@@ -253,7 +253,7 @@ exports.endseason = async (req, res) => {
 
 exports.updateseason = async (req, res) => {
     try {
-        const { seasonId, title, duration } = req.body;
+        const { seasonId, title, duration, status } = req.body;
 
         if (!seasonId) {
             return res.status(400).json({
@@ -265,7 +265,15 @@ exports.updateseason = async (req, res) => {
         const updateData = {};
         if (title) updateData.title = title;
         if (duration && duration > 0) updateData.duration = duration;
-
+        if (status) {
+            if (!["active", "upcoming", "ended"].includes(status)) {
+                return res.status(400).json({
+                    message: "bad-request",
+                    data: "Invalid status. Must be 'active', 'upcoming', or 'ended'."
+                });
+            }
+            updateData.status = status;
+        }
         if (Object.keys(updateData).length === 0) {
             return res.status(400).json({
                 message: "bad-request",
