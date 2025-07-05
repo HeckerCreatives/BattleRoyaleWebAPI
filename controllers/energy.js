@@ -1,18 +1,10 @@
 const { default: mongoose } = require("mongoose");
-const { Energy, EnergyLimit } = require("../models/Energy");
+const { Energy } = require("../models/Energy");
 
 exports.resetenergy = async (req, res) => {
     try {
-        // Get the current energy limit (default value if not set)
-        const energyLimit = await EnergyLimit.findOne()
-            .then(data => data ? data.limit : 100) // Default to 100 if no limit is set
-            .catch(err => {
-                console.log(`Error getting energy limit: ${err}`);
-                return 100; // Default fallback
-            });
-
-        // Reset all users' energy to the limit
-        const resetResult = await Energy.updateMany({}, { $set: { energy: energyLimit } });
+        // Reset all users' energy to 10 (static limit)
+        const resetResult = await Energy.updateMany({}, { $set: { energy: 10 } });
 
         console.log(`Energy reset completed. ${resetResult.modifiedCount} users affected.`);
 
@@ -20,7 +12,7 @@ exports.resetenergy = async (req, res) => {
             message: "success",
             data: {
                 usersAffected: resetResult.modifiedCount,
-                energyLimit: energyLimit
+                energyLimit: 10
             }
         });
 
@@ -37,18 +29,10 @@ exports.resetuserenergy = async (req, res) => {
     try {
         const { id, username } = req.user;
 
-        // Get the current energy limit
-        const energyLimit = await EnergyLimit.findOne()
-            .then(data => data ? data.limit : 100)
-            .catch(err => {
-                console.log(`Error getting energy limit: ${err}`);
-                return 100;
-            });
-
-        // Reset specific user's energy
+        // Reset specific user's energy to 10 (static limit)
         const updateResult = await Energy.findOneAndUpdate(
             { owner: new mongoose.Types.ObjectId(id) },
-            { $set: { energy: energyLimit } },
+            { $set: { energy: 10 } },
             { new: true }
         );
 
@@ -65,7 +49,7 @@ exports.resetuserenergy = async (req, res) => {
             message: "success",
             data: {
                 energy: updateResult.energy,
-                energyLimit: energyLimit
+                energyLimit: 10
             }
         });
 
@@ -96,16 +80,11 @@ exports.getuserenergy = async (req, res) => {
             });
         }
 
-        // Get energy limit
-        const energyLimit = await EnergyLimit.findOne()
-            .then(data => data ? data.limit : 100)
-            .catch(err => 100);
-
         return res.json({ 
             message: "success",
             data: {
                 energy: userEnergy.energy,
-                energyLimit: energyLimit
+                energyLimit: 10
             }
         });
 
@@ -114,42 +93,6 @@ exports.getuserenergy = async (req, res) => {
         return res.status(500).json({ 
             message: "error", 
             data: "There was a problem getting your energy. Please contact customer support." 
-        });
-    }
-}
-
-exports.updateenergylimit = async (req, res) => {
-    try {
-        const { limit } = req.body;
-
-        if (!limit || typeof limit !== 'number' || limit <= 0) {
-            return res.status(400).json({
-                message: "bad-request",
-                data: "Please provide a valid energy limit (positive number)."
-            });
-        }
-
-        // Update or create energy limit
-        const energyLimit = await EnergyLimit.findOneAndUpdate(
-            {},
-            { $set: { limit: limit } },
-            { new: true, upsert: true }
-        );
-
-        console.log(`Energy limit updated to: ${limit}`);
-
-        return res.json({ 
-            message: "success",
-            data: {
-                energyLimit: energyLimit.limit
-            }
-        });
-
-    } catch (error) {
-        console.log(`Error updating energy limit: ${error}`);
-        return res.status(500).json({ 
-            message: "error", 
-            data: "There was a problem updating energy limit. Please contact customer support." 
         });
     }
 }
