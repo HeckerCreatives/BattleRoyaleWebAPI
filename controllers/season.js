@@ -20,13 +20,15 @@ exports.createseason = async (req, res) => {
             });
         }
 
-        // Check if there's already an active season
-        const activeSeason = await Season.findOne({ status: "active" });
-        if (activeSeason) {
-            return res.status(400).json({
-                message: "bad-request",
-                data: "There is already an active season. End it before creating a new one."
-            });
+        // Check if trying to create an active season when one already exists
+        if (status === "active") {
+            const activeSeason = await Season.findOne({ status: "active" });
+            if (activeSeason) {
+                return res.status(400).json({
+                    message: "bad-request",
+                    data: "There is already an active season. End it before creating a new active season."
+                });
+            }
         }
 
         const seasonData = {
@@ -272,6 +274,18 @@ exports.updateseason = async (req, res) => {
                     data: "Invalid status. Must be 'active', 'upcoming', or 'ended'."
                 });
             }
+            
+            // Check if trying to set status to active when another season is already active
+            if (status === "active") {
+                const activeSeason = await Season.findOne({ status: "active" });
+                if (activeSeason && activeSeason._id.toString() !== seasonId) {
+                    return res.status(400).json({
+                        message: "bad-request",
+                        data: "There is already an active season. End it before setting another season to active."
+                    });
+                }
+            }
+            
             updateData.status = status;
         }
         if (Object.keys(updateData).length === 0) {
