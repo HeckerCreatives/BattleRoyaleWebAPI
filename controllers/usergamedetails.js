@@ -1,6 +1,6 @@
 const { default: mongoose } = require("mongoose")
 const Usergamedetails = require("../models/Usergamedetails")
-const Leaderboard = require("../models/Leaderboard")
+const { Leaderboard } = require("../models/Leaderboard")
 
 exports.getusergamedetails = async (req, res) => {
     const {id, username} = req.user

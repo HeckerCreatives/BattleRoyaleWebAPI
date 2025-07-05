@@ -1,5 +1,5 @@
 const { default: mongoose } = require("mongoose");
-const Leaderboard = require("../models/Leaderboard");
+const { Leaderboard, LeaderboardHistory } = require("../models/Leaderboard");
 
 exports.getleaderboard = async (req, res) => {
     const {id, username} = req.user
@@ -10,7 +10,7 @@ exports.getleaderboard = async (req, res) => {
         select: "username"
     })
     .limit(50)
-    .sort({amount: -1})
+    .sort({amount: -1, updatedAt: -1}) // Sort by amount descending, then by updatedAt descending
     .then(data => data)
     .catch(err => {
         console.log(`There's a problem getting the leaderboard`)
@@ -65,7 +65,184 @@ exports.updateuserleaderboard = async (req, res) => {
 }
 
 exports.resetleaderboard = async (req, res) => {
-    await Leaderboard.updateMany({}, { $set: { amount: 0}})
+    try {
+        // Get current leaderboard data before resetting
+        const currentLeaderboard = await Leaderboard.find({ amount: { $gt: 0 } })
+            .populate({
+                path: "owner",
+                select: "username"
+            })
+            .sort({ amount: -1, updatedAt: -1 })
+            .limit(1000)
 
-    return res.json({message: "success"})
+        if (currentLeaderboard.length > 0) {
+            // Find the next available index for this reset event
+            const latestHistory = await LeaderboardHistory.findOne()
+                .sort({ index: -1 })
+                .select('index');
+            
+            const nextIndex = latestHistory ? latestHistory.index + 1 : 1;
+            
+            // Create history entries for all users with scores > 0
+            const historyEntries = currentLeaderboard.map((entry, position) => ({
+                owner: entry.owner._id,
+                eventname: `Leaderboard Reset #${nextIndex}`,
+                index: nextIndex,
+                amount: entry.amount,
+                date: new Date().toISOString().split('T')[0] // YYYY-MM-DD format
+            }));
+
+            // Save history entries
+            await LeaderboardHistory.insertMany(historyEntries);
+        }
+
+        // Reset the leaderboard
+        await Leaderboard.updateMany({}, { $set: { amount: 0 } });
+
+        return res.json({ message: "success" });
+    } catch (error) {
+        console.log(`Error resetting leaderboard: ${error}`);
+        return res.status(500).json({ 
+            message: "error", 
+            data: "There was a problem resetting the leaderboard. Please contact customer support." 
+        });
+    }
+}
+
+exports.getleaderboardhistory = async (req, res) => {
+    try {
+        const { index } = req.query; // Optional: get specific index, if not provided get all
+
+        let query = {};
+        if (index) {
+            query.index = parseInt(index);
+        }
+
+        const historyData = await LeaderboardHistory.find(query)
+            .populate({
+                path: "owner",
+                select: "username"
+            })
+            .sort({ index: -1, amount: -1 }) // Sort by index (newest first), then by amount (highest first)
+            .then(data => data)
+            .catch(err => {
+                console.log(`There's a problem getting the leaderboard history: ${err}`);
+                return res.status(500).json({
+                    message: "error", 
+                    data: "There was a problem retrieving leaderboard history."
+                });
+            });
+
+        if (!historyData || historyData.length <= 0) {
+            return res.json({
+                message: "success", 
+                data: {
+                    history: {},
+                    totalEvents: 0
+                }
+            });
+        }
+
+        // Group by index
+        const groupedHistory = {};
+        const eventDetails = {};
+
+        historyData.forEach(entry => {
+            const { index, owner, amount, eventname, date } = entry;
+            
+            // Initialize the index group if it doesn't exist
+            if (!groupedHistory[index]) {
+                groupedHistory[index] = [];
+                eventDetails[index] = {
+                    eventname: eventname,
+                    date: date,
+                    totalParticipants: 0
+                };
+            }
+
+            // Add user to the group
+            groupedHistory[index].push({
+                user: owner.username,
+                amount: amount,
+                position: groupedHistory[index].length + 1
+            });
+
+            eventDetails[index].totalParticipants++;
+        });
+
+        // Format the response
+        const formattedHistory = {};
+        Object.keys(groupedHistory).forEach(index => {
+            formattedHistory[index] = {
+                eventInfo: eventDetails[index],
+                leaderboard: groupedHistory[index]
+            };
+        });
+
+        return res.json({
+            message: "success", 
+            data: {
+                history: formattedHistory,
+                totalEvents: Object.keys(formattedHistory).length
+            }
+        });
+
+    } catch (error) {
+        console.log(`Error getting leaderboard history: ${error}`);
+        return res.status(500).json({ 
+            message: "error", 
+            data: "There was a problem retrieving leaderboard history. Please contact customer support." 
+        });
+    }
+}
+
+exports.getleaderboardhistoryoptions = async (req, res) => {
+    try {
+        // Get unique index values with their corresponding event details
+        const historyOptions = await LeaderboardHistory.aggregate([
+            {
+                $group: {
+                    _id: "$index",
+                    eventname: { $first: "$eventname" },
+                    date: { $first: "$date" },
+                    index: { $first: "$index" }
+                }
+            },
+            {
+                $sort: { index: -1 } // Sort by index descending (newest first)
+            },
+            {
+                $project: {
+                    _id: 0,
+                    name: { $concat: ["$date", " - ", { $toString: "$index" }] },
+                    index: "$index"
+                }
+            }
+        ]);
+
+        if (!historyOptions || historyOptions.length <= 0) {
+            return res.json({
+                message: "success", 
+                data: {
+                    options: [],
+                    totalOptions: 0
+                }
+            });
+        }
+
+        return res.json({
+            message: "success", 
+            data: {
+                options: historyOptions,
+                totalOptions: historyOptions.length
+            }
+        });
+
+    } catch (error) {
+        console.log(`Error getting leaderboard history options: ${error}`);
+        return res.status(500).json({ 
+            message: "error", 
+            data: "There was a problem retrieving leaderboard history options. Please contact customer support." 
+        });
+    }
 }

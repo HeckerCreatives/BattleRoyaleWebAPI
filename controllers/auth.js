@@ -6,7 +6,7 @@ const Staffusers = require("../models/Staffusers")
 const PlayerCharacterSetting = require("../models/Playercharactersettings")
 const Wallets = require("../models/Wallets")
 const Usergamedetails = require("../models/Usergamedetails")
-const Leaderboard = require("../models/Leaderboard")
+const { Leaderboard } = require("../models/Leaderboard")
 
 const fs = require('fs')
 

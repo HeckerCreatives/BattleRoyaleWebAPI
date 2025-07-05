@@ -15,5 +15,18 @@ const energySchema = new mongoose.Schema(
     }
 )
 
+const EnergyLimitSchema = new mongoose.Schema(
+    {
+        limit: {
+            type: Number,
+            default: 100
+        }
+    },
+    {
+        timestamps: true
+    }
+)
+const EnergyLimit = mongoose.model("EnergyLimit", EnergyLimitSchema)
 const Energy = mongoose.model("Energy", energySchema)
-module.exports = Energy
+
+module.exports = { Energy, EnergyLimit }
