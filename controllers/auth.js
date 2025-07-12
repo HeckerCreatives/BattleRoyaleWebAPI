@@ -24,9 +24,9 @@ const encrypt = async password => {
 
 exports.register = async (req, res) => {
     
-    const { username, password, email, country } = req.body;
+    const { username, password, email } = req.body;
 
-    if(!email || !username || !password || !country){
+    if(!email || !username || !password){
         return res.status(400).json({ message: "failed", data: "Please enter all user details."})
     }
     if(username.length < 6 || username.length > 15){
@@ -49,6 +49,13 @@ exports.register = async (req, res) => {
     if(usernameExists){
         return res.status(400).json({ message: "bad-request", data: "Username has already been used."})
     }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.(com|org|net|edu|gov|mil|co|io|me|info|biz)$/i;
+    
+    if(!emailRegex.test(email)){
+        return res.status(400).json({ message: "failed", data: "Please enter a valid email address with a proper domain (.com, .org, .net, etc.)."})
+    }
+    
     const emailExists = await Userdetails.findOne({
         email: { $regex: `^${email}$`, $options: 'i' } })
         .then(data => data)
@@ -67,7 +74,7 @@ exports.register = async (req, res) => {
 
         return res.status(400).json({ message: "bad-request", data: "There's a problem in registering account. Please try again." })
     })
-    await Userdetails.create({ owner: new mongoose.Types.ObjectId(user._id), email: email, country: country, profilepicture: "" })
+    await Userdetails.create({ owner: new mongoose.Types.ObjectId(user._id), email: email, profilepicture: "" })
     .catch(async (err)=> {
         console.log(`There's a problem creating user details for ${username} Error: ${err}`)
         
