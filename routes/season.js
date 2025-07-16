@@ -13,8 +13,8 @@ const { protectplayer, protectsuperadmin, protectalluser } = require("../middlew
 
 router
     .post("/createseason", protectsuperadmin, createseason)
-    .get("/getallseasons", protectplayer, getallseasons)
-    .get("/getcurrentseason", protectplayer, getcurrentseason)
+    .get("/getallseasons", protectalluser, getallseasons)
+    .get("/getcurrentseason", protectalluser, getcurrentseason)
     .get("/getseasonsuperadmin", protectsuperadmin, getseasonsuperadmin)
     .post("/startseason", protectsuperadmin, startseason)
     .post("/endseason", protectsuperadmin, endseason)
