@@ -9,12 +9,12 @@ const {
     updateseason, 
     deleteseason 
 } = require("../controllers/season")
-const { protectplayer, protectsuperadmin, protectalluser } = require("../middleware/middleware")
+const { protectplayer, protectsuperadmin, protectallusers } = require("../middleware/middleware")
 
 router
     .post("/createseason", protectsuperadmin, createseason)
-    .get("/getallseasons", protectalluser, getallseasons)
-    .get("/getcurrentseason", protectalluser, getcurrentseason)
+    .get("/getallseasons", protectallusers, getallseasons)
+    .get("/getcurrentseason", protectallusers, getcurrentseason)
     .get("/getseasonsuperadmin", protectsuperadmin, getseasonsuperadmin)
     .post("/startseason", protectsuperadmin, startseason)
     .post("/endseason", protectsuperadmin, endseason)
