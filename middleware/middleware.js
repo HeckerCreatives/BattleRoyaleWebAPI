@@ -97,7 +97,7 @@ exports.protectplayer = async (req, res, next) => {
     }
 }
 
-exports.protectalluser = async (req, res, next) => {
+exports.protectallusers = async (req, res, next) => {
     const token = req.headers.cookie?.split('; ').find(row => row.startsWith('sessionToken='))?.split('=')[1]
 
     if (!token){
@@ -107,11 +107,11 @@ exports.protectalluser = async (req, res, next) => {
     try{
         const decodedToken = await verifyJWT(token);
 
-        if (decodedToken.auth != "superadmin" && decodedToken.auth != "player"){
+        if (decodedToken.auth != "player" && decodedToken.auth != "superadmin"){
             return res.status(401).json({ message: 'Unauthorized', data: "You are not authorized to view this page. Please login the right account to view the page." });
         }
 
-        const user = await Staffusers.findOne({username: decodedToken.username})
+        const user = await Users.findOne({username: decodedToken.username})
         .then(data => data)
 
         if (!user){
