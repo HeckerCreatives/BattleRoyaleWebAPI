@@ -1,5 +1,6 @@
 const { default: mongoose } = require("mongoose");
 const { Leaderboard, LeaderboardHistory } = require("../models/Leaderboard");
+const Season = require("../models/Season");
 
 exports.getleaderboard = async (req, res) => {
     const {id, username} = req.user
@@ -80,13 +81,19 @@ exports.resetleaderboard = async (req, res) => {
             const latestHistory = await LeaderboardHistory.findOne()
                 .sort({ index: -1 })
                 .select('index');
-            
+            const currentSeason = await Season.findOne({ status: "active" })
+            if (!currentSeason) {
+                return res.status(400).json({
+                    message: "bad-request",
+                    data: "No active season found. Cannot reset leaderboard."
+                });
+            }
             const nextIndex = latestHistory ? latestHistory.index + 1 : 1;
             
             // Create history entries for all users with scores > 0
             const historyEntries = currentLeaderboard.map((entry, position) => ({
                 owner: entry.owner._id,
-                eventname: `Leaderboard Reset #${nextIndex}`,
+                eventname: `${currentSeason.title} - Reset #${nextIndex}`,
                 index: nextIndex,
                 amount: entry.amount,
                 date: new Date().toISOString().split('T')[0] // YYYY-MM-DD format
@@ -214,8 +221,8 @@ exports.getleaderboardhistoryoptions = async (req, res) => {
             {
                 $project: {
                     _id: 0,
-                    name: { $concat: ["$date", " - ", { $toString: "$index" }] },
-                    index: "$index"
+                    index: "$index",
+                    name: "$eventname",
                 }
             }
         ]);
