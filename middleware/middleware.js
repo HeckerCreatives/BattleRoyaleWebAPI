@@ -111,10 +111,12 @@ exports.protectallusers = async (req, res, next) => {
             return res.status(401).json({ message: 'Unauthorized', data: "You are not authorized to view this page. Please login the right account to view the page." });
         }
 
-        const user = await Users.findOne({username: decodedToken.username})
+        let user = await Users.findOne({username: decodedToken.username})
         .then(data => data)
-
         if (!user){
+            user = await Staffusers.findOne({username: decodedToken.username})
+            .then(data => data)
+        } else {
             res.clearCookie('sessionToken', { path: '/' })
             return res.status(401).json({ message: 'Unauthorized', data: "You are not authorized to view this page. Please login the right account to view the page." });
         }
