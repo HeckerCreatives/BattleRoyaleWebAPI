@@ -2,6 +2,7 @@ const StaffUser = require("../models/Staffusers")
 const Maintenance = require("../models/Maintenance")
 const { default: mongoose } = require("mongoose")
 const Sociallinks = require("../models/Sociallinks")
+const Version = require("../models/Version")
 
 
 exports.initialize = async () => {
@@ -19,6 +20,18 @@ exports.initialize = async () => {
             console.log(`Error saving admin data: ${err}`)
             return
         }) 
+    }
+
+    const version = await Version.find({});
+
+    if (version.length <= 0) {
+        await Version.create({
+            version: "1.0.0",
+            description: "Initial version of the game",
+            releaseDate: new Date(),
+            isActive: true
+            });
+        console.log("Version initialized");
     }
 
     const maintenanceList = await Maintenance.find()
