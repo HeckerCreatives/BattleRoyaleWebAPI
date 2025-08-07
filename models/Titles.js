@@ -4,6 +4,10 @@ const mongoose = require("mongoose");
 
 const TitleSchema = new mongoose.Schema( 
     {
+        category: {
+            type: String,
+            required: true,
+        },
         index: {
             type: Number,
             required: true,

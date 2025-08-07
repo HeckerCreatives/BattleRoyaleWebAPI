@@ -1,6 +1,9 @@
 const { default: mongoose } = require("mongoose");
 const { Leaderboard, LeaderboardHistory } = require("../models/Leaderboard");
 const Season = require("../models/Season");
+const Usergamedetails = require("../models/Usergamedetails");
+const { Titles, CharacterTitles } = require("../models/Titles");
+const { isEqual } = require("date-fns");
 
 exports.getleaderboard = async (req, res) => {
     const {id, username} = req.user
@@ -197,20 +200,37 @@ exports.resetLeaderboard = async (req, res) => {
     }
 
     try {
+        // Verify season exists
+        const currentSeason = await Season.findById(season);
+        if (!currentSeason) {
+            return res.status(400).json({ message: "bad-request", data: "Invalid season ID." });
+        }
 
         switch (category) {
-        case "kill":
-
-           break;
-        case "death":
-            break;
-        case "level":
-            break;
-        case "amount":
-            break;
-        default:
-            return res.status(400).json({ message: "bad-request", data: "Invalid category." });
+            case "kill":
+                await resetKillHistory(season);
+                await Usergamedetails.updateMany({}, { $set: { kill: 0 } });
+                break;
+            case "death":
+                await resetDeathHistory(season);
+                await Usergamedetails.updateMany({}, { $set: { death: 0 } });
+                break;
+            case "level":
+                await resetLevelHistory(season);
+                await Usergamedetails.updateMany({}, { $set: { level: 1 } });
+                break;
+            case "amount":
+                await resetAmountHistory(season);
+                await Leaderboard.updateMany({}, { $set: { amount: 0 } });
+                break;
+            default:
+                return res.status(400).json({ message: "bad-request", data: "Invalid category." });
         }
+
+        return res.json({ 
+            message: "success", 
+            data: `${category} leaderboard reset successfully for season: ${currentSeason.title}` 
+        });
     } catch (error) {
         console.log(`Error resetting leaderboard: ${error}`);
         return res.status(500).json({ message: "server-error", data: "There was an error resetting the leaderboard." });
@@ -218,11 +238,405 @@ exports.resetLeaderboard = async (req, res) => {
 }
 
 
-async function resetamounthistory(season) {
+async function resetAmountHistory(season) {
     try {
-        
+        const lbdata = await Leaderboard.find({ amount: { $gt: 0 } })
+            .populate({
+                path: "owner",
+                select: "username"
+            })
+            .sort({amount: -1, updatedAt: -1})
+            .then(data => data)
+            .catch(err => {
+                console.log(`There's a problem getting the leaderboard`)
+                return [];
+            });
+
+        const currentSeason = await Season.findById(season);
+        if (!currentSeason) {
+            console.log(`No season found with ID: ${season}`);
+            return;
+        }
+
+        if (lbdata.length > 0) {
+            // Award titles to top 3 players for 'amount' category
+            const top3 = lbdata.slice(0, 3);
+            await awardLeaderboardTitles(top3, "amount");
+
+            const leaderboardHistory = await LeaderboardHistory.findOne({ category: "amount" })
+                .sort({ index: -1 })
+                .then(data => data)
+                .catch(err => {
+                    console.log(`There's a problem getting the leaderboard history`)
+                    return null;
+                });
+
+            const nextIndex = leaderboardHistory ? leaderboardHistory.index + 1 : 1;
+
+            const historyEntries = lbdata.map((tempdata, position) => ({
+                owner: tempdata.owner._id,
+                category: "amount",
+                amount: tempdata.amount,
+                date: new Date().toISOString().split('T')[0],
+                index: nextIndex,
+                season: currentSeason._id,
+                position: position + 1
+            }));
+
+            await LeaderboardHistory.insertMany(historyEntries);
+        }
     } catch (error) {
         console.log(`Error resetting amount history: ${error}`);
+    }
+}
+
+async function resetKillHistory(season) {
+    try {
+        const lbdata = await Usergamedetails.find({kill: {$gt: 0}})
+            .populate({
+                path: "owner",
+                select: "username"
+            })
+            .sort({kill: -1, updatedAt: -1})
+            .then(data => data)
+            .catch(err => {
+                console.log(`There's a problem getting the kill leaderboard`)
+                return [];
+            });
+
+        const currentSeason = await Season.findById(season);
+        if (!currentSeason) {
+            console.log(`No season found with ID: ${season}`);
+            return;
+        }
+
+        if (lbdata.length > 0) {
+            // Award titles to top 3 players for 'kill' category
+            const top3 = lbdata.slice(0, 3);
+            await awardLeaderboardTitles(top3, "kill");
+
+            const leaderboardHistory = await LeaderboardHistory.findOne({ category: "kill" })
+                .sort({ index: -1 })
+                .then(data => data)
+                .catch(err => {
+                    console.log(`There's a problem getting the leaderboard history`)
+                    return null;
+                });
+
+            const nextIndex = leaderboardHistory ? leaderboardHistory.index + 1 : 1;
+
+            const historyEntries = lbdata.map((tempdata, position) => ({
+                owner: tempdata.owner._id,
+                category: "kill",
+                amount: tempdata.kill,
+                date: new Date().toISOString().split('T')[0],
+                index: nextIndex,
+                season: currentSeason._id,
+                position: position + 1
+            }));
+
+            await LeaderboardHistory.insertMany(historyEntries);
+        }
+    } catch (error) {
+        console.log(`Error resetting kill history: ${error}`);
+    }
+}
+
+async function resetDeathHistory(season) {
+    try {
+        const lbdata = await Usergamedetails.find({death: {$gt: 0}})
+            .populate({
+                path: "owner",
+                select: "username"
+            })
+            .sort({death: -1, updatedAt: -1})
+            .then(data => data)
+            .catch(err => {
+                console.log(`There's a problem getting the death leaderboard`)
+                return [];
+            });
+
+        const currentSeason = await Season.findById(season);
+        if (!currentSeason) {
+            console.log(`No season found with ID: ${season}`);
+            return;
+        }
+
+        if (lbdata.length > 0) {
+            // Award titles to top 3 players for 'death' category
+            const top3 = lbdata.slice(0, 3);
+            await awardLeaderboardTitles(top3, "death");
+
+            const leaderboardHistory = await LeaderboardHistory.findOne({ category: "death" })
+                .sort({ index: -1 })
+                .then(data => data)
+                .catch(err => {
+                    console.log(`There's a problem getting the leaderboard history`)
+                    return null;
+                });
+
+            const nextIndex = leaderboardHistory ? leaderboardHistory.index + 1 : 1;
+
+            const historyEntries = lbdata.map((tempdata, position) => ({
+                owner: tempdata.owner._id,
+                category: "death",
+                amount: tempdata.death,
+                date: new Date().toISOString().split('T')[0],
+                index: nextIndex,
+                season: currentSeason._id,
+                position: position + 1
+            }));
+
+            await LeaderboardHistory.insertMany(historyEntries);
+        }
+    } catch (error) {
+        console.log(`Error resetting death history: ${error}`);
+    }
+}
+
+async function resetLevelHistory(season) {
+    try {
+        const lbdata = await Usergamedetails.find()
+            .populate({
+                path: "owner",
+                select: "username"
+            })
+            .sort({level: -1})
+            .then(data => data)
+            .catch(err => {
+                console.log(`There's a problem getting the level leaderboard`)
+                return [];
+            });
+
+        const currentSeason = await Season.findById(season);
+        if (!currentSeason) {
+            console.log(`No season found with ID: ${season}`);
+            return;
+        }
+
+        if (lbdata.length > 0) {
+            // Award titles to top 3 players for 'level' category
+            const top3 = lbdata.slice(0, 3);
+            await awardLeaderboardTitles(top3, "level");
+
+            const leaderboardHistory = await LeaderboardHistory.findOne({ category: "level" })
+                .sort({ index: -1 })
+                .then(data => data)
+                .catch(err => {
+                    console.log(`There's a problem getting the leaderboard history`)
+                    return null;
+                });
+
+            const nextIndex = leaderboardHistory ? leaderboardHistory.index + 1 : 1;
+
+            const historyEntries = lbdata.map((tempdata, position) => ({
+                owner: tempdata.owner._id,
+                category: "level",
+                amount: tempdata.level,
+                date: new Date().toISOString().split('T')[0],
+                index: nextIndex,
+                season: currentSeason._id,
+                position: position + 1
+            }));
+
+            await LeaderboardHistory.insertMany(historyEntries);
+        }
+    } catch (error) {
+        console.log(`Error resetting level history: ${error}`);
+    }
+}
+
+// Universal title award function for leaderboard categories
+async function awardLeaderboardTitles(players, category) {
+    try {
+        const titleData = await Titles.findOne({ category: category });
+        if (!titleData) {
+            console.log(`No title data found for category: ${category}`);
+            return;
+        }
+        const characterTitleData = players.map(player => ({
+            owner: player.owner, // Use player.owner (ObjectId or populated doc)
+            title: titleData._id,
+            isEquipped: false,
+        }));
+        await CharacterTitles.insertMany(characterTitleData);
+    } catch (error) {
+        console.log(`Error awarding leaderboard titles: ${error}`);
+    }
+}
+
+exports.getleaderboardhistory = async (req, res) => {
+    try {
+        const { index, category } = req.query; // Optional filters
+
+        let query = {};
+        if (index) {
+            query.index = parseInt(index);
+        }
+        if (category) {
+            query.category = category;
+        }
+
+        const historyData = await LeaderboardHistory.find(query)
+            .populate({
+                path: "owner",
+                select: "username"
+            })
+            .populate({
+                path: "season",
+                select: "title"
+            })
+            .sort({ index: -1, position: 1 }) // Sort by index (newest first), then by position (best first)
+            .then(data => data)
+            .catch(err => {
+                console.log(`There's a problem getting the leaderboard history: ${err}`);
+                return res.status(500).json({
+                    message: "error", 
+                    data: "There was a problem retrieving leaderboard history."
+                });
+            });
+
+        if (!historyData || historyData.length <= 0) {
+            return res.json({
+                message: "success", 
+                data: {
+                    history: {},
+                    totalEvents: 0
+                }
+            });
+        }
+
+        // Group by index and category
+        const groupedHistory = {};
+        const eventDetails = {};
+
+        historyData.forEach(entry => {
+            const { index, category, owner, amount, date, season, position } = entry;
+            const key = `${index}-${category}`;
+            
+            // Initialize the group if it doesn't exist
+            if (!groupedHistory[key]) {
+                groupedHistory[key] = [];
+                eventDetails[key] = {
+                    category: category,
+                    index: index,
+                    date: date,
+                    season: season ? season.title : "Unknown Season",
+                    totalParticipants: 0
+                };
+            }
+
+            // Add user to the group
+            groupedHistory[key].push({
+                user: owner.username,
+                amount: amount,
+                position: position || groupedHistory[key].length + 1
+            });
+
+            eventDetails[key].totalParticipants++;
+        });
+
+        // Format the response
+        const formattedHistory = {};
+        Object.keys(groupedHistory).forEach(key => {
+            formattedHistory[key] = {
+                eventInfo: eventDetails[key],
+                leaderboard: groupedHistory[key]
+            };
+        });
+
+        return res.json({
+            message: "success", 
+            data: {
+                history: formattedHistory,
+                totalEvents: Object.keys(formattedHistory).length
+            }
+        });
+
+    } catch (error) {
+        console.log(`Error getting leaderboard history: ${error}`);
+        return res.status(500).json({ 
+            message: "error", 
+            data: "There was a problem retrieving leaderboard history. Please contact customer support." 
+        });
+    }
+}
+
+exports.getleaderboardhistoryoptions = async (req, res) => {
+    try {
+        const { category } = req.query; // Optional category filter
+
+        let matchStage = {};
+        if (category) {
+            matchStage.category = category;
+        }
+
+        // Get unique index values with their corresponding event details
+        const historyOptions = await LeaderboardHistory.aggregate([
+            ...(Object.keys(matchStage).length > 0 ? [{ $match: matchStage }] : []),
+            {
+                $lookup: {
+                    from: "seasons",
+                    localField: "season",
+                    foreignField: "_id",
+                    as: "seasonInfo"
+                }
+            },
+            {
+                $group: {
+                    _id: { index: "$index", category: "$category" },
+                    date: { $first: "$date" },
+                    index: { $first: "$index" },
+                    category: { $first: "$category" },
+                    season: { $first: { $arrayElemAt: ["$seasonInfo.title", 0] } }
+                }
+            },
+            {
+                $sort: { index: -1 } // Sort by index descending (newest first)
+            },
+            {
+                $project: {
+                    _id: 0,
+                    index: "$index",
+                    category: "$category",
+                    name: { 
+                        $concat: [
+                            "$category", 
+                            " - ", 
+                            "$date", 
+                            " (", 
+                            { $ifNull: ["$season", "Unknown"] }, 
+                            ")"
+                        ] 
+                    }
+                }
+            }
+        ]);
+
+        if (!historyOptions || historyOptions.length <= 0) {
+            return res.json({
+                message: "success", 
+                data: {
+                    options: [],
+                    totalOptions: 0
+                }
+            });
+        }
+
+        return res.json({
+            message: "success", 
+            data: {
+                options: historyOptions,
+                totalOptions: historyOptions.length
+            }
+        });
+
+    } catch (error) {
+        console.log(`Error getting leaderboard history options: ${error}`);
+        return res.status(500).json({ 
+            message: "error", 
+            data: "There was a problem retrieving leaderboard history options. Please contact customer support." 
+        });
     }
 }
 
