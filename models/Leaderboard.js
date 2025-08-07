@@ -15,25 +15,32 @@ const leaderboardSchema = new mongoose.Schema(
     }
 )
 
-const leaderboardHistorySchema = new mongoose.Schema(
+
+const LeaderboardHistorySchema = new mongoose.Schema(
     {
         owner: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Users"
         },
-        eventname: {
+        category: {
             type: String,
+            enum: ["kill", "death", "level", "amount"],
+        },
+        amount: {
+            type: Number,
             required: true
+        },
+        date: {
+            type: Date,
+            default: Date.now
         },
         index: {
             type: Number,
             required: true
         },
-        amount: {
-            type: Number
-        },
-        date: {
-            type: String,
+        season: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Seasons",
         }
     },
     {
@@ -41,7 +48,7 @@ const leaderboardHistorySchema = new mongoose.Schema(
     }
 )
 
-const LeaderboardHistory = mongoose.model("LeaderboardHistory", leaderboardHistorySchema)
+const LeaderboardHistory = mongoose.model("LeaderboardHistory", LeaderboardHistorySchema);
 const Leaderboard = mongoose.model("Leaderboard", leaderboardSchema)
 
 module.exports = { Leaderboard, LeaderboardHistory }
