@@ -40,7 +40,7 @@ const LeaderboardHistorySchema = new mongoose.Schema(
         },
         season: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "Seasons",
+            ref: "Season",
         }
     },
     {

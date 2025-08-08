@@ -252,6 +252,8 @@ async function resetAmountHistory(season) {
                 return [];
             });
 
+            
+
         const currentSeason = await Season.findById(season);
         if (!currentSeason) {
             console.log(`No season found with ID: ${season}`);
@@ -467,97 +469,79 @@ async function awardLeaderboardTitles(players, category) {
 
 exports.getleaderboardhistory = async (req, res) => {
     try {
-        const { index, category } = req.query; // Optional filters
+        const { index, category } = req.query; // Required filters now
 
-        let query = {};
-        if (index) {
-            query.index = parseInt(index);
-        }
-        if (category) {
-            query.category = category;
+        // Validate required params
+        if (!index || !category) {
+            return res.status(400).json({
+                message: "bad-request",
+                data: "Category and index are required."
+            });
         }
 
-        const historyData = await LeaderboardHistory.find(query)
-            .populate({
-                path: "owner",
-                select: "username"
-            })
-            .populate({
-                path: "season",
-                select: "title"
-            })
-            .sort({ index: -1, position: 1 }) // Sort by index (newest first), then by position (best first)
+        const idx = parseInt(index);
+        if (Number.isNaN(idx)) {
+            return res.status(400).json({
+                message: "bad-request",
+                data: "Index must be a number."
+            });
+        }
+
+        // Fetch only the specified category + index group
+        const historyData = await LeaderboardHistory.find({ index: idx, category })
+            .populate({ path: "owner", select: "username" })
+            .populate({ path: "season", select: "title" })
+            .sort({ position: 1, amount: -1 }) // position ascending; fallback by amount desc
             .then(data => data)
             .catch(err => {
                 console.log(`There's a problem getting the leaderboard history: ${err}`);
                 return res.status(500).json({
-                    message: "error", 
+                    message: "error",
                     data: "There was a problem retrieving leaderboard history."
                 });
             });
 
-        if (!historyData || historyData.length <= 0) {
+        if (!Array.isArray(historyData)) return; // early return if error response already sent
+
+        if (historyData.length <= 0) {
             return res.json({
-                message: "success", 
+                message: "success",
                 data: {
-                    history: {},
-                    totalEvents: 0
+                    eventInfo: null,
+                    leaderboard: []
                 }
             });
         }
 
-        // Group by index and category
-        const groupedHistory = {};
-        const eventDetails = {};
+        // Build single event group details
+        const first = historyData[0];
+        const eventInfo = {
+            category,
+            index: idx,
+            date: first.date,
+            season: first.season ? first.season.title : "Unknown Season",
+            totalParticipants: historyData.length
+        };
 
-        historyData.forEach(entry => {
-            const { index, category, owner, amount, date, season, position } = entry;
-            const key = `${index}-${category}`;
-            
-            // Initialize the group if it doesn't exist
-            if (!groupedHistory[key]) {
-                groupedHistory[key] = [];
-                eventDetails[key] = {
-                    category: category,
-                    index: index,
-                    date: date,
-                    season: season ? season.title : "Unknown Season",
-                    totalParticipants: 0
-                };
-            }
-
-            // Add user to the group
-            groupedHistory[key].push({
-                user: owner.username,
-                amount: amount,
-                position: position || groupedHistory[key].length + 1
-            });
-
-            eventDetails[key].totalParticipants++;
-        });
-
-        // Format the response
-        const formattedHistory = {};
-        Object.keys(groupedHistory).forEach(key => {
-            formattedHistory[key] = {
-                eventInfo: eventDetails[key],
-                leaderboard: groupedHistory[key]
-            };
-        });
+        const leaderboard = historyData.map((entry, i) => ({
+            user: entry.owner?.username,
+            amount: entry.amount,
+            position: entry.position || i + 1
+        }));
 
         return res.json({
-            message: "success", 
+            message: "success",
             data: {
-                history: formattedHistory,
-                totalEvents: Object.keys(formattedHistory).length
+                eventInfo,
+                leaderboard
             }
         });
 
     } catch (error) {
         console.log(`Error getting leaderboard history: ${error}`);
-        return res.status(500).json({ 
-            message: "error", 
-            data: "There was a problem retrieving leaderboard history. Please contact customer support." 
+        return res.status(500).json({
+            message: "error",
+            data: "There was a problem retrieving leaderboard history. Please contact customer support."
         });
     }
 }
@@ -573,7 +557,11 @@ exports.getleaderboardhistoryoptions = async (req, res) => {
 
         // Get unique index values with their corresponding event details
         const historyOptions = await LeaderboardHistory.aggregate([
-            ...(Object.keys(matchStage).length > 0 ? [{ $match: matchStage }] : []),
+            {
+                $match: {
+                    category: category
+                }
+            },
             {
                 $lookup: {
                     from: "seasons",
@@ -599,19 +587,23 @@ exports.getleaderboardhistoryoptions = async (req, res) => {
                     _id: 0,
                     index: "$index",
                     category: "$category",
-                    name: { 
+                    name: {
                         $concat: [
-                            "$category", 
-                            " - ", 
-                            "$date", 
-                            " (", 
-                            { $ifNull: ["$season", "Unknown"] }, 
+                            "Reset #",
+                            { $toString: "$index" },
+                            " - ",
+                            "$category",
+                            " - ",
+                            { $dateToString: { format: "%Y-%m-%d", date: "$date" } },
+                            " (",
+                            { $ifNull: ["$season", "Unknown"] },
                             ")"
-                        ] 
+                        ]
                     }
                 }
             }
         ]);
+
 
         if (!historyOptions || historyOptions.length <= 0) {
             return res.json({
