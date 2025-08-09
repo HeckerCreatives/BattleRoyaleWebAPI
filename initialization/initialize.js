@@ -3,6 +3,8 @@ const Maintenance = require("../models/Maintenance")
 const { default: mongoose } = require("mongoose")
 const Sociallinks = require("../models/Sociallinks")
 const Version = require("../models/Version")
+const Marketplace = require("../models/Marketplace")
+const marketdata = require("./data")
 
 
 exports.initialize = async () => {
@@ -85,6 +87,22 @@ exports.initialize = async () => {
             console.log(`Error creating social links data: ${err}`)
             return
         }) 
+    }
+
+    const marketitems = await Marketplace.find()
+    .then(data => data)
+    .catch(err => {
+        console.log(`Error finding marketplace items: ${err}`)
+    })
+
+
+    if (marketitems.length <= 0) {
+        await Marketplace.insertMany(marketdata)
+        .catch(err => {
+            console.log(`Error creating marketplace items: ${err}`)
+            return
+        })
+        console.log("Marketplace items initialized");
     }
 
     console.log("SERVER DATA INITIALIZED")

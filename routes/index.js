@@ -19,6 +19,7 @@ const routers = app => {
     app.use("/user", require("./user"));
     app.use("/usergamedetails", require("./usergamedetails"))
     app.use("/version", require("./version"))
+    app.use("/marketplace", require("./marketplace"));
 };
 
 module.exports = routers;
