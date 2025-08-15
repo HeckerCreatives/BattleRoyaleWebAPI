@@ -133,7 +133,7 @@ exports.register = async (req, res) => {
         return res.status(400).json({ message: "bad-request", data: "There's a problem in registering account. Please try again."})
     })
 
-    await Energy.create({owner: new mongoose.Types.ObjectId(user._id), energy: 10}).catch(async (err)=> {
+    await Energy.create({owner: new mongoose.Types.ObjectId(user._id), energy: 20}).catch(async (err)=> {
         console.log(`There's a problem creating user details for ${username} Error: ${err}`)
         
         await Users.findOneAndDelete({ username: username })
