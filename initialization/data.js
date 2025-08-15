@@ -269,4 +269,31 @@ const marketdata = [
     //#endregion
 ];
 
-module.exports = marketdata;
+const titlesdata = [
+    {
+        category: "kill",
+        index: "TITLE-000",
+        name: "Rise of Fearless",
+        description: "Title for new players"
+    },
+    {
+        category: "kill",
+        index: "TITLE-001",
+        name: "KILLING KING",
+        description: "Awarded to the top killer."
+    },
+    {
+        category: "kill",
+        index: "TITLE-002",
+        name: "ULTIMATE PLAYER",
+        description: "Awarded to the ultimate player."
+    },
+    {
+        category: "death",
+        index: "TITLE-003",
+        name: "GRIM REAPER",
+        description: "Awarded for most deaths."
+    }
+]
+
+module.exports = {marketdata, titlesdata};

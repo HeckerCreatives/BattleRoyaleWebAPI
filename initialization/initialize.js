@@ -5,7 +5,7 @@ const Sociallinks = require("../models/Sociallinks")
 const Version = require("../models/Version")
 const Marketplace = require("../models/Marketplace")
 const {Titles} = require("../models/Titles")
-const marketdata = require("./data")
+const {marketdata, titlesdata} = require("./data")
 
 
 exports.initialize = async () => {
