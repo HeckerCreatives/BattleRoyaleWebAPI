@@ -20,7 +20,10 @@ const TitleSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
-
+        rarity: {
+            type: String,
+            required: true
+        }
     },
     {
         timestamps: true
