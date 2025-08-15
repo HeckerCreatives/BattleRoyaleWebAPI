@@ -77,6 +77,16 @@ const marketdata = [
     //#endregion
     //#region TITLES
     {
+        itemid: "TITLE-000",
+        itemname: "RISE OF FEARLESS",
+        description: "Awarded to the top killer.",
+        amount: "0",
+        currency: "points",
+        type: "title",
+        consumable: "0",
+        rarity: "Common"
+    },
+    {
         itemid: "TITLE-001",
         itemname: "KILLING KING",
         description: "Awarded to the top killer.",
