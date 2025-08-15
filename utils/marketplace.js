@@ -11,7 +11,7 @@ const marketdata = require("../data/marketdata");
 exports.addCoinsToUser = async (userId, amount) => {
     try {
         const wallet = await Wallets.findOneAndUpdate(
-            { owner: new mongoose.Types.ObjectId(userId), type: "COINS" },
+            { owner: new mongoose.Types.ObjectId(userId), type: "coins" },
             { $inc: { amount: amount } },
             { upsert: true, new: true }
         );

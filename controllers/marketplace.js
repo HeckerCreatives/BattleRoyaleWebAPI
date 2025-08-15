@@ -75,9 +75,9 @@ exports.buymarketplaceitem = async (req, res) => {
         // Check user wallet
         let currentWalletAmount = 0;
 
-        if (item.currency === "COINS") {
+        if (item.currency === "coins") {
             currentWalletAmount = await walletUtils.checkWallet(id, "coins");
-        } else if (item.currency === "POINTS") {
+        } else if (item.currency === "points") {
             currentWalletAmount = await leaderboardUtils.checkPoints(id);
         } else {
             return res.status(400).json({ message: "failed", data: "Invalid currency type." });

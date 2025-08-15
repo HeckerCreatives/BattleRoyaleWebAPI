@@ -20,7 +20,7 @@ const marketplaceSchema = new mongoose.Schema(
             type: String,   //  HOW MUCH?
         },
         currency: {
-            type: String    //  POINTS (LEADERBOARD POINTS), COINS
+            type: String    //  points (LEADERBOARD points), coins
         },
         type:{
             type: String    //  POTION, ENERGY, TITLE
