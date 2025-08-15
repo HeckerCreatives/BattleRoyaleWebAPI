@@ -9,7 +9,7 @@ const TitleSchema = new mongoose.Schema(
             required: true,
         },
         index: {
-            type: Number,
+            type: String,
             required: true,
         },
         name: {
