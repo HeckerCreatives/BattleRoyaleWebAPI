@@ -274,25 +274,29 @@ const titlesdata = [
         category: "kill",
         index: "TITLE-000",
         name: "Rise of Fearless",
-        description: "Title for new players"
+        description: "Title for new players",
+        rarity: "Legendary"
     },
     {
         category: "kill",
         index: "TITLE-001",
         name: "KILLING KING",
-        description: "Awarded to the top killer."
+        description: "Awarded to the top killer.",
+        rarity: "Legendary"
     },
     {
         category: "kill",
         index: "TITLE-002",
         name: "ULTIMATE PLAYER",
-        description: "Awarded to the ultimate player."
+        description: "Awarded to the ultimate player.",
+        rarity: "Legendary"
     },
     {
         category: "death",
         index: "TITLE-003",
         name: "GRIM REAPER",
-        description: "Awarded for most deaths."
+        description: "Awarded for most deaths.",
+        rarity: "Legendary"
     }
 ]
 
