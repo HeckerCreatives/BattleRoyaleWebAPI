@@ -157,7 +157,7 @@ const marketdata = [
         rarity: "Legendary"
     },
     {
-        itemid: "TITLE-008",
+        itemid: "TITLE-009",
         itemname: "Ethiopian Marksman",
         description: "",
         amount: "500",
@@ -167,7 +167,7 @@ const marketdata = [
         rarity: "Epic"
     },
     {
-        itemid: "TITLE-009",
+        itemid: "TITLE-010",
         itemname: "Rift Valley Sniper",
         description: "",
         amount: "500",
@@ -177,7 +177,7 @@ const marketdata = [
         rarity: "Epic"
     },
     {
-        itemid: "TITLE-010",
+        itemid: "TITLE-011",
         itemname: "Zambezi Marksman",
         description: "",
         amount: "500",
@@ -187,7 +187,7 @@ const marketdata = [
         rarity: "Epic"
     },
     {
-        itemid: "TITLE-011",
+        itemid: "TITLE-012",
         itemname: "Oya's Warrior",
         description: "",
         amount: "500",
@@ -197,7 +197,7 @@ const marketdata = [
         rarity: "Epic"
     },
     {
-        itemid: "TITLE-012",
+        itemid: "TITLE-013",
         itemname: "Dahomey Champion",
         description: "",
         amount: "500",
@@ -207,7 +207,7 @@ const marketdata = [
         rarity: "Epic"
     },
     {
-        itemid: "TITLE-013",
+        itemid: "TITLE-014",
         itemname: "African Hawkeye",
         description: "",
         amount: "250",
@@ -217,7 +217,7 @@ const marketdata = [
         rarity: "Uncommon"
     },
     {
-        itemid: "TITLE-014",
+        itemid: "TITLE-015",
         itemname: "The Lion's Roar",
         description: "",
         amount: "250",
@@ -227,7 +227,7 @@ const marketdata = [
         rarity: "Uncommon"
     },
     {
-        itemid: "TITLE-015",
+        itemid: "TITLE-016",
         itemname: "Zulu Warrior",
         description: "",
         amount: "250",
@@ -237,7 +237,7 @@ const marketdata = [
         rarity: "Uncommon"
     },
     {
-        itemid: "TITLE-016",
+        itemid: "TITLE-017",
         itemname: "Nigerian Vanguard",
         description: "",
         amount: "250",
@@ -247,7 +247,7 @@ const marketdata = [
         rarity: "Uncommon"
     },
     {
-        itemid: "TITLE-017",
+        itemid: "TITLE-018",
         itemname: "Head Hunter",
         description: "",
         amount: "250",
