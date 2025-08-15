@@ -7,6 +7,8 @@ const PlayerCharacterSetting = require("../models/Playercharactersettings")
 const Wallets = require("../models/Wallets")
 const Usergamedetails = require("../models/Usergamedetails")
 const { Leaderboard } = require("../models/Leaderboard")
+const { Titles, CharacterTitles } = require("../models/Titles");
+const Inventory = require("../models/Inventory");
 
 const fs = require('fs')
 
@@ -142,6 +144,24 @@ exports.register = async (req, res) => {
         await PlayerCharacterSetting.findOneAndDelete({owner: new mongoose.Types.ObjectId(user._id)})
 
         return res.status(400).json({ message: "bad-request", data: "There's a problem in registering account. Please try again."})
+    })
+
+    const titlesdata = await Titles.findOne({ index: "TITLE-000" }).session(session);
+    if (!titlesdata) {
+        throw new Error("Default title data not found");
+    }
+
+    CharacterTitles.create({ 
+        owner: user._id, 
+        title: titlesdata._id 
+    })
+    Inventory.create({ 
+        owner: user._id, 
+        itemid: titlesdata.index, 
+        itemname: titlesdata.name, 
+        quantity: 1, 
+        type: "title", 
+        isEquipped: true
     })
 
     return res.json({ message: "success" })
