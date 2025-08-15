@@ -4,6 +4,7 @@ const { default: mongoose } = require("mongoose")
 const Sociallinks = require("../models/Sociallinks")
 const Version = require("../models/Version")
 const Marketplace = require("../models/Marketplace")
+const Titles = require("../models/Titles")
 const marketdata = require("./data")
 
 
@@ -103,6 +104,22 @@ exports.initialize = async () => {
             return
         })
         console.log("Marketplace items initialized");
+    }
+    
+
+    const titles = await Titles.find()
+    .then(data => data)
+    .catch(err => {
+        console.log("Error finding titles: ${err}")
+    })
+
+    if (titles.length <= 0) {
+        await Titles.insertMany(titlesdata)
+        .catch(err => {
+            console.log("Error creating titles: ${err}")
+            return
+        })
+        console.log("Titles initialized");
     }
 
     console.log("SERVER DATA INITIALIZED")
