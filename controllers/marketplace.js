@@ -689,13 +689,13 @@ exports.getplayerinventory = async (req, res) => {
     if (!userId) {
         return res.status(400).json({ message: "failed", data: "User ID is required." });
     }
-    const matchCondition = {
+    let matchCondition = {
         owner: new mongoose.Types.ObjectId(userId)
     };
-
     if (type) {
         matchCondition.type = type;
     }
+
 
     try {
         const inventory = await Inventory.find(matchCondition)
@@ -998,14 +998,26 @@ exports.updateplayerwallet = async (req, res) => {
 // Get player transaction history
 exports.getplayertransactions = async (req, res) => {
     const { id, username } = req.user;
-    const { userId, page = 0, limit = 20 } = req.query;
+    const { userId, page = 0, limit = 20, type, action } = req.query;
 
     if (!userId) {
         return res.status(400).json({ message: "failed", data: "User ID is required." });
     }
 
+    let matchCondition = {
+        owner: new mongoose.Types.ObjectId(userId)
+    };
+
+    if (type) {
+        matchCondition.type = type;
+    }
+
+    if (action) {
+        matchCondition.action = action;
+    }
+
     try {
-        const transactions = await Transaction.find({ owner: new mongoose.Types.ObjectId(userId) })
+        const transactions = await Transaction.find(matchCondition)
             .sort({ createdAt: -1 })
             .skip(parseInt(page) * parseInt(limit))
             .limit(parseInt(limit))
