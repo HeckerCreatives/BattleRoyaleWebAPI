@@ -8,6 +8,8 @@ const routers = app => {
     app.use("/investor", require("./investor"));
     app.use("/leaderboard", require("./leaderboard"))
     app.use("/maintenance", require("./maintenance"));
+    app.use("/marketplace", require("./marketplace"));
+    app.use("/matchhistory", require("./matchhistory"));
     app.use("/news", require("./news"));
     app.use("/newsletter", require("./newsletter"));
     app.use("/season", require("./season"))
@@ -19,7 +21,6 @@ const routers = app => {
     app.use("/user", require("./user"));
     app.use("/usergamedetails", require("./usergamedetails"))
     app.use("/version", require("./version"))
-    app.use("/marketplace", require("./marketplace"));
 };
 
 module.exports = routers;
