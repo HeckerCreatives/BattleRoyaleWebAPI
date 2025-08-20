@@ -6,9 +6,32 @@ const inventorySchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: "Users"
         },
+        // reference to marketplace item (optional)
         item: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "Marketplace"
+            ref: "Marketplace",
+            required: false
+        },
+        // denormalized fields for easier reads (keeps compatibility)
+        itemid: {
+            type: String,
+            required: false
+        },
+        itemname: {
+            type: String,
+            required: false
+        },
+        type: {
+            type: String,
+            required: false
+        },
+        quantity: {
+            type: Number,
+            default: 1
+        },
+        isEquipped: {
+            type: Boolean,
+            default: false
         }
     },
     {

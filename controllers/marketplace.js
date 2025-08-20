@@ -684,29 +684,45 @@ exports.getallmarketplaceitems = async (req, res) => {
 // Get player inventory by user ID
 exports.getplayerinventory = async (req, res) => {
     const { id, username } = req.user;
-    const { userId } = req.query;
+    const { userId, type } = req.query;
 
     if (!userId) {
         return res.status(400).json({ message: "failed", data: "User ID is required." });
     }
+    const matchCondition = {
+        owner: new mongoose.Types.ObjectId(userId)
+    };
+
+    if (type) {
+        matchCondition.type = type;
+    }
 
     try {
-        const inventory = await Inventory.find({ owner: new mongoose.Types.ObjectId(userId) })
+        const inventory = await Inventory.find(matchCondition)
             .populate({ path: "owner", select: "username" })
+            .populate({ path: "item" })
             .sort({ type: 1, itemname: 1 });
 
         const playerUsername = inventory.length > 0 ? inventory[0].owner.username : "Unknown";
 
-        const formattedInventory = inventory.map(item => ({
-            _id: item._id,
-            itemid: item.itemid,
-            itemname: item.itemname,
-            type: item.type,
-            quantity: item.quantity,
-            isEquipped: item.isEquipped,
-            createdAt: item.createdAt,
-            updatedAt: item.updatedAt
-        }));
+        const formattedInventory = inventory.map(inv => {
+            // if populated marketplace item exists, prefer its fields
+            const marketplaceItem = inv.item || {};
+            return {
+                _id: inv._id,
+                itemid: marketplaceItem.itemid || inv.itemid || null,
+                itemname: marketplaceItem.itemname || inv.itemname || null,
+                description: marketplaceItem.description || undefined,
+                amount: marketplaceItem.amount ? parseInt(marketplaceItem.amount) : undefined,
+                currency: marketplaceItem.currency || undefined,
+                type: marketplaceItem.type || inv.type || undefined,
+                consumable: marketplaceItem.consumable || undefined,
+                quantity: inv.quantity || 0,
+                isEquipped: !!inv.isEquipped,
+                createdAt: inv.createdAt,
+                updatedAt: inv.updatedAt
+            };
+        });
 
         return res.json({ 
             message: "success", 
