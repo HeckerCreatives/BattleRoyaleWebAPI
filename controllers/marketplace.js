@@ -1043,8 +1043,12 @@ exports.updateplayerwallet = async (req, res) => {
 // Get player transaction history
 exports.getplayertransactions = async (req, res) => {
     const { id, username } = req.user;
-    const { userId, page = 0, limit = 20, type, action } = req.query;
+    const { userId, page, limit, type, action } = req.query;
 
+    const pageOptions = {
+        page: parseInt(page) || 0,
+        limit: parseInt(limit) || 10
+    };
     if (!userId) {
         return res.status(400).json({ message: "failed", data: "User ID is required." });
     }
@@ -1064,9 +1068,12 @@ exports.getplayertransactions = async (req, res) => {
     try {
         const transactions = await Transaction.find(matchCondition)
             .sort({ createdAt: -1 })
-            .skip(parseInt(page) * parseInt(limit))
-            .limit(parseInt(limit))
-            .populate({ path: "owner", select: "username" });
+            .populate({ path: "owner", select: "username" })
+            .skip(pageOptions.page * pageOptions.limit)
+            .limit(pageOptions.limit);
+
+        const totalCount = await Transaction.countDocuments(matchCondition);
+        const totalPages = Math.ceil(totalCount / pageOptions.limit);
 
         const playerUsername = transactions.length > 0 ? transactions[0].owner.username : "Unknown";
 
@@ -1086,7 +1093,12 @@ exports.getplayertransactions = async (req, res) => {
             data: {
                 player: playerUsername,
                 playerId: userId,
-                transactions: formattedTransactions
+                transactions: formattedTransactions,
+                pagination: {
+                    totalCount,
+                    totalPages,
+                    currentPage: pageOptions.page
+                }
             }
         });
     } catch (err) {
