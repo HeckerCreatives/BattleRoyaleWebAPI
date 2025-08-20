@@ -656,10 +656,34 @@ exports.deletemarketplaceitem = async (req, res) => {
 // Get all marketplace items (admin view)
 exports.getallmarketplaceitems = async (req, res) => {
     const { id, username } = req.user;
+    const { page, limit, search } = req.query;
+
+    const pageOptions = {
+        page: parseInt(page) || 0,
+        limit: parseInt(limit) || 10
+    };
+
+    let matchCondition = {}
+
+    if (search){
+        matchCondition = {
+            $or: [
+                { itemname: { $regex: search, $options: "i" } },
+                { description: { $regex: search, $options: "i" } },
+                { currency: { $regex: search, $options: "i" } },
+                { type: { $regex: search, $options: "i" } }
+            ]
+        };
+    }
 
     try {
-        const items = await Marketplace.find({})
-            .sort({ type: 1, itemid: 1 });
+        const items = await Marketplace.find(matchCondition)
+            .sort({ type: 1, itemid: 1 })
+            .skip(pageOptions.page * pageOptions.limit)
+            .limit(pageOptions.limit)
+
+        const totalCount = await Marketplace.countDocuments(matchCondition);
+        const totalPages = Math.ceil(totalCount / pageOptions.limit);
 
         const formattedItems = items.map(item => ({
             _id: item._id,
@@ -674,7 +698,7 @@ exports.getallmarketplaceitems = async (req, res) => {
             updatedAt: item.updatedAt
         }));
 
-        return res.json({ message: "success", data: formattedItems });
+        return res.json({ message: "success", data: formattedItems, pagination: { totalCount, totalPages, currentPage: pageOptions.page, pageSize: pageOptions.limit } });
     } catch (err) {
         console.log(`Error getting all marketplace items for admin ${username}: ${err}`);
         return res.status(400).json({ message: "bad-request", data: "There's a problem getting marketplace items." });
@@ -684,8 +708,12 @@ exports.getallmarketplaceitems = async (req, res) => {
 // Get player inventory by user ID
 exports.getplayerinventory = async (req, res) => {
     const { id, username } = req.user;
-    const { userId, type } = req.query;
-
+    const { userId, page, limit, type } = req.query;
+    
+    const pageOptions = {
+        page: parseInt(page) || 0,
+        limit: parseInt(limit) || 10
+    }
     if (!userId) {
         return res.status(400).json({ message: "failed", data: "User ID is required." });
     }
@@ -693,7 +721,13 @@ exports.getplayerinventory = async (req, res) => {
         owner: new mongoose.Types.ObjectId(userId)
     };
     if (type) {
-        matchCondition.type = type;
+        if (type === "usable"){
+            matchCondition.type = {
+                $in: ["potion", "energy"]
+            };
+        } else {
+            matchCondition.type = type;
+        }
     }
 
 
@@ -701,7 +735,12 @@ exports.getplayerinventory = async (req, res) => {
         const inventory = await Inventory.find(matchCondition)
             .populate({ path: "owner", select: "username" })
             .populate({ path: "item" })
-            .sort({ type: 1, itemname: 1 });
+            .sort({ type: 1, itemname: 1 })
+            .skip(pageOptions.page * pageOptions.limit)
+            .limit(pageOptions.limit);
+
+        const totalCount = await Inventory.countDocuments(matchCondition);
+        const totalPages = Math.ceil(totalCount / pageOptions.limit);
 
         const playerUsername = inventory.length > 0 ? inventory[0].owner.username : "Unknown";
 
@@ -729,7 +768,13 @@ exports.getplayerinventory = async (req, res) => {
             data: {
                 player: playerUsername,
                 playerId: userId,
-                inventory: formattedInventory
+                inventory: formattedInventory,
+                pagination: {
+                    totalCount,
+                    totalPages,
+                    currentPage: pageOptions.page,
+                    pageSize: pageOptions.limit
+                }
             }
         });
     } catch (err) {
