@@ -807,7 +807,7 @@ exports.additemtoplayer = async (req, res) => {
                         isEquipped: false
                     }], { session });
                 }
-            }
+            };
 
             // Create transaction record
             await Transaction.create([{

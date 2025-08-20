@@ -9,12 +9,12 @@ const transactionSchema = new mongoose.Schema(
         },
         type: {
             type: String,
-            enum: ["purchase", "sale", "use", "earn"],
+            enum: ["purchase", "sale", "use", "earn", "admin_gift"],
             required: true
         },
         action: {
             type: String,
-            enum: ["buy", "sell", "use", "equip", "unequip"],
+            enum: ["buy", "sell", "use", "equip", "unequip", "add"],
             required: true
         },
         itemid: {
