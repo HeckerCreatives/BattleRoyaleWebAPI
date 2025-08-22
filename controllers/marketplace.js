@@ -188,28 +188,57 @@ exports.buymarketplaceitem = async (req, res) => {
 // Get user inventory
 exports.getuserinventory = async (req, res) => {
     const { id, username } = req.user;
+    const { page, limit, type } = req.query;
+    const pageOptions = {
+        page: parseInt(page) || 0,
+        limit: parseInt(limit) || 10
+    }
+    let matchCondition = {
+        owner: new mongoose.Types.ObjectId(id)
+    }
+
+    if (type) {
+        if (type === "usable"){
+            matchCondition.type = {
+                $in: ["potion", "energy"]
+            };
+        } else {
+            matchCondition.type = type;
+        }
+    }
 
     try {
-        const inventory = await Inventory.find({ owner: new mongoose.Types.ObjectId(id) })
+        const inventory = await Inventory.find(matchCondition)
+            .populate({ path: "owner", select: "username" })
+            .populate({ path: "item" })
             .sort({ type: 1, itemname: 1 })
-            .then(data => data)
-            .catch(err => {
-                console.log(`Error getting inventory for ${username}: ${err}`);
-                throw err;
-            });
+            .skip(pageOptions.page * pageOptions.limit)
+            .limit(pageOptions.limit);
+        const totalCount = await Inventory.countDocuments(matchCondition);
+        const totalPages = Math.ceil(totalCount / pageOptions.limit);
 
-        const formattedInventory = inventory.map(item => ({
-            itemid: item.itemid,
-            itemname: item.itemname,
-            type: item.type,
-            quantity: item.quantity,
-            isEquipped: item.isEquipped,
-            canUse: item.type !== "TITLE" && item.quantity > 0,
-            canEquip: item.type === "TITLE",
-            canSell: false // Disable selling for now
-        }));
+        const playerUsername = inventory.length > 0 ? inventory[0].owner.username : "Unknown";
 
-        return res.json({ message: "success", data: formattedInventory });
+        const formattedInventory = inventory.map(inv => {
+            // if populated marketplace item exists, prefer its fields
+            const marketplaceItem = inv.item || {};
+            return {
+                _id: inv._id,
+                itemid: marketplaceItem.itemid || inv.itemid || null,
+                itemname: marketplaceItem.itemname || inv.itemname || null,
+                description: marketplaceItem.description || undefined,
+                amount: marketplaceItem.amount ? parseInt(marketplaceItem.amount) : undefined,
+                currency: marketplaceItem.currency || undefined,
+                type: marketplaceItem.type || inv.type || undefined,
+                consumable: marketplaceItem.consumable || undefined,
+                quantity: inv.quantity || 0,
+                isEquipped: !!inv.isEquipped,
+                createdAt: inv.createdAt,
+                updatedAt: inv.updatedAt
+            };
+        });
+
+        return res.json({ message: "success", data: formattedInventory, playerId: id, player: playerUsername, pagination: { totalCount, totalPages, currentPage: pageOptions.page + 1 } });
     } catch (err) {
         console.log(`Error getting inventory for ${username}: ${err}`);
         return res.status(400).json({ message: "bad-request", data: "There's a problem getting your inventory." });
@@ -487,18 +516,39 @@ exports.getactiveeffects = async (req, res) => {
 // Get transaction history
 exports.gettransactionhistory = async (req, res) => {
     const { id, username } = req.user;
-    const { page = 0, limit = 20 } = req.query;
+    const { page, limit, type, action } = req.query;
 
+    const pageOptions = {
+        page: parseInt(page) || 0,
+        limit: parseInt(limit) || 10
+    };
+
+    let matchCondition = {
+        owner: new mongoose.Types.ObjectId(id)
+    };
+
+    if (type) {
+        matchCondition.type = type;
+    }
+
+    if (action) {
+        matchCondition.action = action;
+    }
     try {
-        const transactions = await Transaction.find({ owner: new mongoose.Types.ObjectId(id) })
+        const transactions = await Transaction.find(matchCondition)
             .sort({ createdAt: -1 })
-            .skip(parseInt(page) * parseInt(limit))
-            .limit(parseInt(limit))
+            .skip(pageOptions.page * pageOptions.limit)
+            .limit(pageOptions.limit)
             .then(data => data)
             .catch(err => {
                 console.log(`Error getting transaction history for ${username}: ${err}`);
                 throw err;
             });
+
+        const totalCount = await Transaction.countDocuments(matchCondition);
+        const totalPages = Math.ceil(totalCount / pageOptions.limit);
+
+        const playerUsername = transactions.length > 0 ? transactions[0].owner.username : "Unknown";
 
         const formattedTransactions = transactions.map(transaction => ({
             id: transaction._id,
@@ -510,6 +560,20 @@ exports.gettransactionhistory = async (req, res) => {
             description: transaction.description,
             date: transaction.createdAt
         }));
+
+        return res.json({ 
+            message: "success", 
+            data: {
+                player: playerUsername,
+                playerId: id,
+                transactions: formattedTransactions,
+                pagination: {
+                    totalCount,
+                    totalPages,
+                    currentPage: pageOptions.page
+                }
+            }
+        });
 
         return res.json({ message: "success", data: formattedTransactions });
     } catch (err) {
