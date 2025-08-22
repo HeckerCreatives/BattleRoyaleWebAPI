@@ -11,7 +11,7 @@ exports.getmatchhistory = async (req, res) => {
     try {
         const matchHistory = await Matchhistory.find({ owner: id })
             .populate('owner', 'username')
-            .skip((pageOptions.page - 1) * pageOptions.limit)
+            .skip(pageOptions.page * pageOptions.limit)
             .limit(pageOptions.limit)
             .sort({ createdAt: -1 })
         const totalCount = await Matchhistory.countDocuments({ owner: id })

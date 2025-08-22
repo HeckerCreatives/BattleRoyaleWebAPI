@@ -9,6 +9,7 @@ router
 	.get("/inventory", protectplayer, marketplaceController.getuserinventory)
 	.post("/use", protectplayer, marketplaceController.useitem)
 	.post("/equip-title", protectplayer, marketplaceController.equiptitle)
+	.get("/getequippedtitle", protectplayer, marketplaceController.getequippedtitle)
 	.get("/wallets", protectplayer, marketplaceController.getuserwallets)
 	.get("/effects", protectplayer, marketplaceController.getactiveeffects)
 	.get("/transactions", protectplayer, marketplaceController.gettransactionhistory)

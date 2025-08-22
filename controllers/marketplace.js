@@ -10,9 +10,35 @@ const walletUtils = require("../utils/wallet");
 const energyUtils = require("../utils/energy");
 const leaderboardUtils = require("../utils/leaderboard");
 const inventoryUtils = require("../utils/inventory");
+const { Titles } = require("../models/Titles");
 
 // ==================== PLAYER FUNCTIONS ====================
+exports.getequippedtitle = async (req, res) => {
+    const { id, username } = req.user
+    
+    const equippedTitle = await Inventory.findOne({
+        owner: id,
+        type: "title",
+        isEquipped: true,
+    })
 
+    const equippedTitleDetails = await Titles.findOne({ index: equippedTitle.itemid })
+    if (!equippedTitle) {
+        return res.json({ message: "success", data: null });
+    }
+
+    const finaldata = {
+        itemid: equippedTitle.itemid,
+        itemname: equippedTitleDetails ? equippedTitleDetails.name : null,
+        description:  equippedTitleDetails ? equippedTitleDetails.index : null,
+        rarity:  equippedTitleDetails ? equippedTitleDetails.rarity : null,
+        category:  equippedTitleDetails ? equippedTitleDetails.category : null,
+        quantity: equippedTitle ? equippedTitle.quantity : 0,
+        isEquipped: equippedTitle ? equippedTitle.isEquipped : false,
+    }
+
+    return res.json({ message: "success", data: finaldata });
+}
 exports.getmarketplaceitems = async (req, res) => {
     const { id, username } = req.user;
 
