@@ -22,10 +22,10 @@ exports.getequippedtitle = async (req, res) => {
         isEquipped: true,
     })
 
-    const equippedTitleDetails = await Titles.findOne({ index: equippedTitle.itemid })
     if (!equippedTitle) {
         return res.json({ message: "success", data: null });
     }
+    const equippedTitleDetails = await Titles.findOne({ index: equippedTitle.itemid })
 
     const finaldata = {
         itemid: equippedTitle.itemid,
