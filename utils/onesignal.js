@@ -31,7 +31,11 @@ exports.pushcustomnotificationsend = async (templateId, title, content) => {
   const data = JSON.stringify({
     app_id: `${process.env.ONE_SIGNAL_APP_ID}`,
     included_segments: ["All"],
-    template_id: templateId           // use your OneSignal template
+    template_id: templateId,           // use your OneSignal template
+    custom_data: {
+        "title": title,
+        "content": content
+    }
   });
 
   const options = {
@@ -42,10 +46,6 @@ exports.pushcustomnotificationsend = async (templateId, title, content) => {
     headers: {
       "Content-Type": "application/json; charset=utf-8",
       "Authorization": `Basic ${process.env.ONE_SIGNAL_API_KEY}`
-    },
-    custom_data: {
-        "title": title,
-        "content": content
     }
   };
 
