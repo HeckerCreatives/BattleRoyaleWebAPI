@@ -1,10 +1,13 @@
 const { default: mongoose } = require("mongoose");
 const { Energy } = require("../models/Energy");
+const {pushnotificationsend} = require("../utils/onesignal")
 
 exports.resetenergy = async (req, res) => {
     try {
         // Reset all users' energy to 10 (static limit)
-        const resetResult = await Energy.updateMany({}, { $set: { energy: 10 } });
+        const resetResult = await Energy.updateMany({}, { $set: { energy: 20 } });
+
+        pushnotificationsend(process.env.ONE_SIGNAL_ENERGY_TEMPLATE_ID)
 
         console.log(`Energy reset completed. ${resetResult.modifiedCount} users affected.`);
 
@@ -32,7 +35,7 @@ exports.resetuserenergy = async (req, res) => {
         // Reset specific user's energy to 10 (static limit)
         const updateResult = await Energy.findOneAndUpdate(
             { owner: new mongoose.Types.ObjectId(id) },
-            { $set: { energy: 10 } },
+            { $set: { energy: 20 } },
             { new: true }
         );
 

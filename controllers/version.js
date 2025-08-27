@@ -1,4 +1,5 @@
 const Version = require("../models/Version");
+const {pushnotificationsend} = require("../utils/onesignal")
 
 
 exports.getActiveVersion = async (req, res) => {
@@ -49,25 +50,25 @@ exports.editversion = async (req, res) => {
     if (Object.keys(updateData).length === 0) {
         return res.status(400).json({ message: "bad-request", data: "No fields to update." });
     }
-        const updatedVersion = await Version.findByIdAndUpdate(
-            id,
-            updateData,
-            { new: true, runValidators: true }
-        )
-        .catch(err => {
-            console.log(`Error updating version: ${err}`);
-            return res.status(400).json({ message: "bad-request", data: "There's a problem with the server. Please try again later." });
-        });
+    const updatedVersion = await Version.findByIdAndUpdate(
+        id,
+        updateData,
+        { new: true, runValidators: true }
+    )
+    .catch(err => {
+        console.log(`Error updating version: ${err}`);
+        return res.status(400).json({ message: "bad-request", data: "There's a problem with the server. Please try again later." });
+    });
 
-        if (!updatedVersion) {
-            return res.status(404).json({ message: "not-found", data: "Version not found." });
-        }
+    if (!updatedVersion) {
+        return res.status(404).json({ message: "not-found", data: "Version not found." });
+    }
 
-        return res.status(200).json({
-            message: "success",
-        });
+    pushnotificationsend(process.env.ONE_SIGNAL_NEW_VERSION_TEMPLATE_ID)
 
-
+    return res.status(200).json({
+        message: "success",
+    });
 }
 
 

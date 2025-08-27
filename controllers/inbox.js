@@ -3,6 +3,7 @@ const Inbox = require("../models/Inbox")
 const Users = require("../models/Users")
 
 const { default: mongoose } = require("mongoose");
+const {pushcustomnotificationsend} = require("../utils/onesignal")
 
 
 exports.viewPlayerMessage = async (req, res) => {
@@ -74,6 +75,15 @@ exports.messagePlayers = async (req, res) => {
         console.log(`There's a problem encountered while creating inbox message. Error: ${err}`)
         return res.status(400).json({ message: "bad-request", data: "There's a problem with the server. Please try again later."})
     })
+
+    pushcustomnotificationsend(process.env.ONE_SIGNAL_IN_GAME_MESSAGE_TEMPLATE_ID, title, truncateByWord(description, 100))
     
     return res.json({ message: "success" });
+}
+
+function truncateByWord(text, maxLength) {
+  if (text.length <= maxLength) return text;
+
+  let truncated = text.substring(0, maxLength);
+  return truncated.substring(0, truncated.lastIndexOf(" ")) + "...";
 }
