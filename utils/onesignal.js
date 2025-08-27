@@ -43,11 +43,9 @@ exports.pushcustomnotificationsend = async (templateId, title, content) => {
       "Content-Type": "application/json; charset=utf-8",
       "Authorization": `Basic ${process.env.ONE_SIGNAL_API_KEY}`
     },
-    message: {
-        custom_data: {
-            "title": title,
-            "content": content
-        }
+    custom_data: {
+        "title": title,
+        "content": content
     }
   };
 
