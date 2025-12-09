@@ -18,6 +18,7 @@
     "date-fns": "^4.1.0",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
+    "ethers": "^5.7.2",
     "jsonwebtoken": "^9.0.2",
     "jsonwebtoken-promisified": "^1.0.3",
     "mongoose": "^8.8.0",

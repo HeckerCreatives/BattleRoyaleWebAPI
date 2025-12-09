@@ -27,6 +27,20 @@ const marketplaceSchema = new mongoose.Schema(
         },
         consumable: {
             type: String    //  10
+        },
+        ipfsImage: {
+            type: String
+        },
+        // Optional: Mark if this item CAN be minted as NFT (simple flag)
+        canBeMintedAsNFT: {
+            type: Boolean,
+            default: true  // true for special items that players can mint
+        },
+        // Optional: Item rarity for game mechanics
+        rarity: {
+            type: String,
+            enum: ['common', 'uncommon', 'rare', 'epic', 'legendary', 'mythic'],
+            default: 'common'
         }
     },
     {
