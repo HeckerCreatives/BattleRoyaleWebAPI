@@ -21,6 +21,7 @@ const path = require("path");
 const privateKey = fs.readFileSync(path.resolve(__dirname, "../keys/private-key.pem"), 'utf-8');
 const { default: mongoose } = require("mongoose");
 const { Energy } = require("../models/Energy")
+const { grantItems } = require("../initialization/grantItems")
 
 const encrypt = async password => {
     const salt = await bcrypt.genSalt(10);
@@ -568,8 +569,8 @@ exports.walletLogin = async (req, res) => {
             // Grant starter items to new wallet users
             try {
                 await grantItems(user._id.toString(), [
-                    { itemid: "ENG-001", quantity: 3 },   // 3x Energy Potion
-                    { itemid: "XPPOT-001", quantity: 2 }  // 2x XP Booster
+                    { itemid: "ENG-001", quantity: 1 },   // 3x Energy Potion
+                    { itemid: "XPPOT-001", quantity: 1 }  // 2x XP Booster
                 ], {
                     isMintable: true,
                     reason: "welcome_bonus_wallet_signup"
@@ -601,7 +602,7 @@ exports.walletLogin = async (req, res) => {
             walletAddress: user.walletAddress,
             status: user.status, 
             token: token, 
-            auth: "user" 
+            auth: "player" 
         };
 
         let jwtoken = "";
@@ -843,6 +844,90 @@ exports.unlinkWallet = async (req, res) => {
         return res.status(500).json({ 
             message: "error", 
             data: "Failed to unlink wallet. Please try again." 
+        });
+    }
+}
+
+exports.getUserList = async (req, res) => {
+    try {
+        const user = req.user;
+        const { search = "", limit = 20, page = 1 } = req.query;
+
+        const pageOptions = {
+            page: parseInt(page) || 0,
+            limit: parseInt(limit) || 20,
+        }
+
+        // Build match condition - exclude current user and apply search
+        const matchCondition = {
+            _id: { $ne: user.id }, // Exclude the authenticated user
+            walletAddress: { $ne: null }, // Only users with linked wallets
+            status: "active" // Only show active users
+        };
+
+        // Add search condition if provided
+        if (search && search.trim()) {
+            matchCondition.username = { $regex: search.trim(), $options: 'i' };
+        }
+
+        // Get total count for pagination
+        const totalUsers = await Users.countDocuments(matchCondition);
+
+        // Fetch users with userdetails
+        const users = await Users.find(matchCondition)
+            .select('username walletAddress status createdAt')
+            .sort({ createdAt: -1 })
+            .skip(pageOptions.page * pageOptions.limit)
+            .limit(pageOptions.limit)
+            .lean();
+
+        // Get user details for each user
+        const userIds = users.map(u => u._id);
+        const userDetails = await Userdetails.find({ owner: { $in: userIds } })
+            .select('owner firstname lastname profilepicture')
+            .lean();
+
+        // Create a map for quick lookup
+        const detailsMap = userDetails.reduce((acc, detail) => {
+            acc[detail.owner.toString()] = detail;
+            return acc;
+        }, {});
+
+        // Combine users with their details
+        const usersWithDetails = users.map(user => {
+            const details = detailsMap[user._id.toString()] || {};
+            return {
+                id: user._id,
+                username: user.username,
+                walletAddress: user.walletAddress || null,
+                status: user.status,
+                createdAt: user.createdAt,
+                firstname: details.firstname || "",
+                lastname: details.lastname || "",
+                profilepicture: details.profilepicture || ""
+            };
+        });
+
+        return res.json({
+            message: "success",
+            data: {
+                users: usersWithDetails,
+                pagination: {
+                    currentPage: pageOptions.page,
+                    totalPages: Math.ceil(totalUsers / pageOptions.limit),
+                    totalUsers: totalUsers,
+                    limit: pageOptions.limit,
+                    hasNextPage: pageOptions.page < Math.ceil(totalUsers / pageOptions.limit),
+                    hasPrevPage: pageOptions.page > 0
+                }
+            }
+        });
+
+    } catch (err) {
+        console.error('Get user list error:', err);
+        return res.status(500).json({ 
+            message: "error", 
+            data: "Failed to retrieve user list." 
         });
     }
 }

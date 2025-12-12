@@ -1,7 +1,20 @@
 const mongoose = require("mongoose")
 
+// Counter schema for auto-incrementing tokenId
+const counterSchema = new mongoose.Schema({
+    _id: { type: String, required: true },
+    seq: { type: Number, default: 0 }
+});
+const Counter = mongoose.model('Counter', counterSchema);
+
 const inventorySchema = new mongoose.Schema(
     {
+        // Unique token ID for NFT minting (auto-incremented)
+        tokenId: {
+            type: Number,
+            unique: true,
+            required: true
+        },
         owner: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Users"
@@ -83,6 +96,22 @@ const inventorySchema = new mongoose.Schema(
         timestamps: true,
     }
 )
+
+// Static method to generate next tokenId
+inventorySchema.statics.getNextTokenId = async function() {
+    const counter = await Counter.findByIdAndUpdate(
+        { _id: 'inventoryTokenId' },
+        { $inc: { seq: 1 } },
+        { new: true, upsert: true }
+    );
+    return counter.seq;
+};
+
+// Static method to create inventory with auto-incremented tokenId
+inventorySchema.statics.createWithTokenId = async function(data) {
+    const tokenId = await this.getNextTokenId();
+    return await this.create({ ...data, tokenId });
+};
 
 const Inventory = mongoose.model("Inventory", inventorySchema)
 

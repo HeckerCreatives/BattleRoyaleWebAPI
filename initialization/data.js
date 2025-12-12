@@ -7,7 +7,8 @@ const marketdata = [
         amount: "10",
         currency: "points",
         type: "energy",
-        consumable: "1"
+        consumable: "1",
+        ipfsImage: "https://gateway.pinata.cloud/ipfs/bafybeihhvi76az4xjhrv6cv2d6hkmr3ocheol5eos2igxnroixaymthlxm/energy_potion_1.png"
     },
     {
         itemid: "ENG-002",
@@ -16,7 +17,8 @@ const marketdata = [
         amount: "25",
         currency: "points",
         type: "energy",
-        consumable: "3"
+        consumable: "3",
+        ipfsImage: "https://gateway.pinata.cloud/ipfs/bafybeihhvi76az4xjhrv6cv2d6hkmr3ocheol5eos2igxnroixaymthlxm/energy_potion_3.png",
     },
     {
         itemid: "ENG-003",
@@ -25,7 +27,8 @@ const marketdata = [
         amount: "40",
         currency: "points",
         type: "energy",
-        consumable: "5"
+        consumable: "5",
+        ipfsImage: "https://gateway.pinata.cloud/ipfs/bafybeihhvi76az4xjhrv6cv2d6hkmr3ocheol5eos2igxnroixaymthlxm/energy_potion_5.png"
     },
     {
         itemid: "ENG-004",
@@ -34,7 +37,8 @@ const marketdata = [
         amount: "75",
         currency: "points",
         type: "energy",
-        consumable: "10"
+        consumable: "10",
+        ipfsImage: "https://gateway.pinata.cloud/ipfs/bafybeihhvi76az4xjhrv6cv2d6hkmr3ocheol5eos2igxnroixaymthlxm/energy_potion_10.png"
     },
     //#endregion
     //#region XP potionS
@@ -45,7 +49,8 @@ const marketdata = [
         amount: "50",
         currency: "coins",
         type: "potion",
-        consumable: "2"
+        consumable: "2",
+        ipfsImage: "https://gateway.pinata.cloud/ipfs/bafybeihhvi76az4xjhrv6cv2d6hkmr3ocheol5eos2igxnroixaymthlxm/xp_potion_x2.png"
     },
     {
         itemid: "XPPOT-002",
@@ -54,7 +59,8 @@ const marketdata = [
         amount: "100",
         currency: "coins",
         type: "potion",
-        consumable: "4"
+        consumable: "4",
+        ipfsImage: "https://gateway.pinata.cloud/ipfs/bafybeihhvi76az4xjhrv6cv2d6hkmr3ocheol5eos2igxnroixaymthlxm/xp_potion_x4.png"
     },
     {
         itemid: "XPPOT-003",
@@ -63,7 +69,9 @@ const marketdata = [
         amount: "150",
         currency: "coins",
         type: "potion",
-        consumable: "6"
+        consumable: "6",
+        ipfsImage: "https://gateway.pinata.cloud/ipfs/bafybeihhvi76az4xjhrv6cv2d6hkmr3ocheol5eos2igxnroixaymthlxm/xp_potion_x6.png"
+        
     },
     {
         itemid: "XPPOT-004",
@@ -72,200 +80,201 @@ const marketdata = [
         amount: "250",
         currency: "coins",
         type: "potion",
-        consumable: "10"
+        consumable: "10",
+        ipfsImage: "https://gateway.pinata.cloud/ipfs/bafybeihhvi76az4xjhrv6cv2d6hkmr3ocheol5eos2igxnroixaymthlxm/xp_potion_x10.png"
     },
     //#endregion
     //#region TITLES
-    {
-        itemid: "TITLE-000",
-        itemname: "RISE OF FEARLESS",
-        description: "Awarded to the top killer.",
-        amount: "0",
-        currency: "points",
-        type: "title",
-        consumable: "0",
-        rarity: "Common"
-    },
-    {
-        itemid: "TITLE-001",
-        itemname: "KILLING KING",
-        description: "Awarded to the top killer.",
-        amount: "750",
-        currency: "points",
-        type: "title",
-        consumable: "0",
-        rarity: "Legendary"
-    },
-    {
-        itemid: "TITLE-002",
-        itemname: "ULTIMATE PLAYER",
-        description: "Awarded to the ultimate player.",
-        amount: "750",
-        currency: "points",
-        type: "title",
-        consumable: "0",
-        rarity: "Legendary"
-    },
-    {
-        itemid: "TITLE-003",
-        itemname: "GRIM REAPER",
-        description: "Awarded for most deaths.",
-        amount: "750",
-        currency: "points",
-        type: "title",
-        consumable: "0",
-        rarity: "Legendary"
-    },
-    {
-        itemid: "TITLE-004",
-        itemname: "Fearless",
-        description: "Awarded for the players who are not afraid to face death.",
-        amount: "750",
-        currency: "points",
-        type: "title",
-        consumable: "0",
-        rarity: "Legendary"
-    },
-    {
-        itemid: "TITLE-005",
-        itemname: "The Dune Phantom",
-        description: "",
-        amount: "750",
-        currency: "points",
-        type: "title",
-        consumable: "0",
-        rarity: "Legendary"
-    },
-    {
-        itemid: "TITLE-006",
-        itemname: "Lion of Mali",
-        description: "",
-        amount: "750",
-        currency: "points",
-        type: "title",
-        consumable: "0",
-        rarity: "Legendary"
-    },
-    {
-        itemid: "TITLE-007",
-        itemname: "Mansa's Shield",
-        description: "",
-        amount: "750",
-        currency: "points",
-        type: "title",
-        consumable: "0",
-        rarity: "Legendary"
-    },
-    {
-        itemid: "TITLE-008",
-        itemname: "Spear of Shaka",
-        description: "",
-        amount: "750",
-        currency: "points",
-        type: "title",
-        consumable: "0",
-        rarity: "Legendary"
-    },
-    {
-        itemid: "TITLE-009",
-        itemname: "Ethiopian Marksman",
-        description: "",
-        amount: "500",
-        currency: "points",
-        type: "title",
-        consumable: "0",
-        rarity: "Epic"
-    },
-    {
-        itemid: "TITLE-010",
-        itemname: "Rift Valley Sniper",
-        description: "",
-        amount: "500",
-        currency: "points",
-        type: "title",
-        consumable: "0",
-        rarity: "Epic"
-    },
-    {
-        itemid: "TITLE-011",
-        itemname: "Zambezi Marksman",
-        description: "",
-        amount: "500",
-        currency: "points",
-        type: "title",
-        consumable: "0",
-        rarity: "Epic"
-    },
-    {
-        itemid: "TITLE-012",
-        itemname: "Oya's Warrior",
-        description: "",
-        amount: "500",
-        currency: "points",
-        type: "title",
-        consumable: "0",
-        rarity: "Epic"
-    },
-    {
-        itemid: "TITLE-013",
-        itemname: "Dahomey Champion",
-        description: "",
-        amount: "500",
-        currency: "points",
-        type: "title",
-        consumable: "0",
-        rarity: "Epic"
-    },
-    {
-        itemid: "TITLE-014",
-        itemname: "African Hawkeye",
-        description: "",
-        amount: "250",
-        currency: "points",
-        type: "title",
-        consumable: "0",
-        rarity: "Uncommon"
-    },
-    {
-        itemid: "TITLE-015",
-        itemname: "The Lion's Roar",
-        description: "",
-        amount: "250",
-        currency: "points",
-        type: "title",
-        consumable: "0",
-        rarity: "Uncommon"
-    },
-    {
-        itemid: "TITLE-016",
-        itemname: "Zulu Warrior",
-        description: "",
-        amount: "250",
-        currency: "points",
-        type: "title",
-        consumable: "0",
-        rarity: "Uncommon"
-    },
-    {
-        itemid: "TITLE-017",
-        itemname: "Nigerian Vanguard",
-        description: "",
-        amount: "250",
-        currency: "points",
-        type: "title",
-        consumable: "0",
-        rarity: "Uncommon"
-    },
-    {
-        itemid: "TITLE-018",
-        itemname: "Head Hunter",
-        description: "",
-        amount: "250",
-        currency: "points",
-        type: "title",
-        consumable: "0",
-        rarity: "Uncommon"
-    }
+    // {
+    //     itemid: "TITLE-000",
+    //     itemname: "RISE OF FEARLESS",
+    //     description: "Awarded to the top killer.",
+    //     amount: "0",
+    //     currency: "points",
+    //     type: "title",
+    //     consumable: "0",
+    //     rarity: "Common"
+    // },
+    // {
+    //     itemid: "TITLE-001",
+    //     itemname: "KILLING KING",
+    //     description: "Awarded to the top killer.",
+    //     amount: "750",
+    //     currency: "points",
+    //     type: "title",
+    //     consumable: "0",
+    //     rarity: "Legendary"
+    // },
+    // {
+    //     itemid: "TITLE-002",
+    //     itemname: "ULTIMATE PLAYER",
+    //     description: "Awarded to the ultimate player.",
+    //     amount: "750",
+    //     currency: "points",
+    //     type: "title",
+    //     consumable: "0",
+    //     rarity: "Legendary"
+    // },
+    // {
+    //     itemid: "TITLE-003",
+    //     itemname: "GRIM REAPER",
+    //     description: "Awarded for most deaths.",
+    //     amount: "750",
+    //     currency: "points",
+    //     type: "title",
+    //     consumable: "0",
+    //     rarity: "Legendary"
+    // },
+    // {
+    //     itemid: "TITLE-004",
+    //     itemname: "Fearless",
+    //     description: "Awarded for the players who are not afraid to face death.",
+    //     amount: "750",
+    //     currency: "points",
+    //     type: "title",
+    //     consumable: "0",
+    //     rarity: "Legendary"
+    // },
+    // {
+    //     itemid: "TITLE-005",
+    //     itemname: "The Dune Phantom",
+    //     description: "",
+    //     amount: "750",
+    //     currency: "points",
+    //     type: "title",
+    //     consumable: "0",
+    //     rarity: "Legendary"
+    // },
+    // {
+    //     itemid: "TITLE-006",
+    //     itemname: "Lion of Mali",
+    //     description: "",
+    //     amount: "750",
+    //     currency: "points",
+    //     type: "title",
+    //     consumable: "0",
+    //     rarity: "Legendary"
+    // },
+    // {
+    //     itemid: "TITLE-007",
+    //     itemname: "Mansa's Shield",
+    //     description: "",
+    //     amount: "750",
+    //     currency: "points",
+    //     type: "title",
+    //     consumable: "0",
+    //     rarity: "Legendary"
+    // },
+    // {
+    //     itemid: "TITLE-008",
+    //     itemname: "Spear of Shaka",
+    //     description: "",
+    //     amount: "750",
+    //     currency: "points",
+    //     type: "title",
+    //     consumable: "0",
+    //     rarity: "Legendary"
+    // },
+    // {
+    //     itemid: "TITLE-009",
+    //     itemname: "Ethiopian Marksman",
+    //     description: "",
+    //     amount: "500",
+    //     currency: "points",
+    //     type: "title",
+    //     consumable: "0",
+    //     rarity: "Epic"
+    // },
+    // {
+    //     itemid: "TITLE-010",
+    //     itemname: "Rift Valley Sniper",
+    //     description: "",
+    //     amount: "500",
+    //     currency: "points",
+    //     type: "title",
+    //     consumable: "0",
+    //     rarity: "Epic"
+    // },
+    // {
+    //     itemid: "TITLE-011",
+    //     itemname: "Zambezi Marksman",
+    //     description: "",
+    //     amount: "500",
+    //     currency: "points",
+    //     type: "title",
+    //     consumable: "0",
+    //     rarity: "Epic"
+    // },
+    // {
+    //     itemid: "TITLE-012",
+    //     itemname: "Oya's Warrior",
+    //     description: "",
+    //     amount: "500",
+    //     currency: "points",
+    //     type: "title",
+    //     consumable: "0",
+    //     rarity: "Epic"
+    // },
+    // {
+    //     itemid: "TITLE-013",
+    //     itemname: "Dahomey Champion",
+    //     description: "",
+    //     amount: "500",
+    //     currency: "points",
+    //     type: "title",
+    //     consumable: "0",
+    //     rarity: "Epic"
+    // },
+    // {
+    //     itemid: "TITLE-014",
+    //     itemname: "African Hawkeye",
+    //     description: "",
+    //     amount: "250",
+    //     currency: "points",
+    //     type: "title",
+    //     consumable: "0",
+    //     rarity: "Uncommon"
+    // },
+    // {
+    //     itemid: "TITLE-015",
+    //     itemname: "The Lion's Roar",
+    //     description: "",
+    //     amount: "250",
+    //     currency: "points",
+    //     type: "title",
+    //     consumable: "0",
+    //     rarity: "Uncommon"
+    // },
+    // {
+    //     itemid: "TITLE-016",
+    //     itemname: "Zulu Warrior",
+    //     description: "",
+    //     amount: "250",
+    //     currency: "points",
+    //     type: "title",
+    //     consumable: "0",
+    //     rarity: "Uncommon"
+    // },
+    // {
+    //     itemid: "TITLE-017",
+    //     itemname: "Nigerian Vanguard",
+    //     description: "",
+    //     amount: "250",
+    //     currency: "points",
+    //     type: "title",
+    //     consumable: "0",
+    //     rarity: "Uncommon"
+    // },
+    // {
+    //     itemid: "TITLE-018",
+    //     itemname: "Head Hunter",
+    //     description: "",
+    //     amount: "250",
+    //     currency: "points",
+    //     type: "title",
+    //     consumable: "0",
+    //     rarity: "Uncommon"
+    // }
     //#endregion
 ];
 

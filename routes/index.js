@@ -6,12 +6,14 @@ const routers = app => {
     app.use("/energy", require("./energy"))
     app.use("/inbox", require("./inbox"));
     app.use("/investor", require("./investor"));
+    app.use("/inventory", require("./inventory"));
     app.use("/leaderboard", require("./leaderboard"))
     app.use("/maintenance", require("./maintenance"));
     app.use("/marketplace", require("./marketplace"));
     app.use("/matchhistory", require("./matchhistory"));
     app.use("/news", require("./news"));
     app.use("/newsletter", require("./newsletter"));
+    app.use("/pinata", require("./pinata"))
     app.use("/season", require("./season"))
     app.use("/sociallinks", require("./sociallinks"));
     app.use("/staffusers", require("./staffusers"));
