@@ -50,7 +50,7 @@ const examples = {
     async grantAllMarketItems() {
         console.log("\n--- Example 2: Grant All Items ---");
         
-        const result = await grantAllItems("schnappy", 1); // 10 of each item
+        const result = await grantAllItems("nappy1", 1); // 10 of each item
         console.log(result);
     },
 

@@ -3,6 +3,7 @@ const Inventory = require('../models/Inventory');
 const Users = require('../models/Users');
 const NFTActivity = require('../models/NFTActivity');
 const NFTMarketplace = require('../models/NFTMarketplace');
+const { ethers, JsonRpcProvider } = require('ethers');
 
 
 
@@ -25,7 +26,7 @@ exports.getMyInventory = async (req, res) => {
         };
 
         // Build match condition
-        const matchCondition = { owner: id };
+        const matchCondition = { owner: id, isMintable: true };
         
         // Filter: Exclude listed items by default
         if (includeListed !== 'true') {
@@ -111,7 +112,7 @@ exports.getMyInventory = async (req, res) => {
 };
 
 exports.mintItem = async (req, res) => {
-    const user = req.user;
+    const { id, username } = req.user;
     try {
         const { inventoryId, metadataUri, targetWallet } = req.body;
 
@@ -119,7 +120,7 @@ exports.mintItem = async (req, res) => {
             return res.status(400).json({ message: "bad-request", data: "Inventory ID is required!" });
         }
 
-        const inventoryItem = await Inventory.findOne({ _id: new mongoose.Types.ObjectId(inventoryId), owner: user.id }).populate('item');
+        const inventoryItem = await Inventory.findOne({ _id: new mongoose.Types.ObjectId(inventoryId), owner: id }).populate('item');
 
         if (!inventoryItem) {
             return res.status(404).json({ message: "failed", data: "Item not found in your inventory!" });
@@ -137,11 +138,11 @@ exports.mintItem = async (req, res) => {
             return res.status(400).json({ message: "failed", data: "No quantity available to mint." });
         }
 
-        const ownerWallet = (user.walletAddress && user.walletAddress.toLowerCase()) || (targetWallet && String(targetWallet).toLowerCase()) || "unknown";
+        const ownerWallet = (targetWallet && String(targetWallet).toLowerCase()) || "unknown";
 
         const newItem = {
             tokenId: inventoryItem.tokenId,
-            owner: user._id,
+            owner: id,
             item: inventoryItem.item ? inventoryItem.item._id : undefined,
             itemid: inventoryItem.itemid,
             itemname: inventoryItem.itemname,
@@ -190,7 +191,7 @@ exports.mintItem = async (req, res) => {
             activityType: 'mint',
             from: null,
             fromWallet: 'system',
-            to: user._id,
+            to: id,
             toWallet: ownerWallet,
             itemname: mintedItem.itemname,
             type: mintedItem.type,
@@ -210,7 +211,7 @@ exports.mintItem = async (req, res) => {
         });
 
     } catch (err) {
-        console.log(`Error minting item for ${user?.username}: ${err}`);
+        console.log(`Error minting item for ${username}: ${err}`);
         return res.status(400).json({ message: "bad-request", data: "There's a problem minting item." });
     }
 };
@@ -471,16 +472,99 @@ exports.getNFTActivity = async (req, res) => {
             .limit(pageOptions.limit)
             .lean();
 
+        // Add human-readable descriptions to activities
+        const activitiesWithDescription = activities.map(activity => {
+            let description = '';
+            const itemName = activity.itemname || `NFT #${activity.tokenId}`;
+            const fromUser = activity.from?.username || activity.fromWallet || 'Unknown';
+            const toUser = activity.to?.username || activity.toWallet || 'Unknown';
+            const isCurrentUserFrom = activity.from?._id?.toString() === id.toString();
+            const isCurrentUserTo = activity.to?._id?.toString() === id.toString();
+
+            switch (activity.activityType) {
+                case 'mint':
+                    description = `${itemName} was minted and reserved for on-chain minting`;
+                    break;
+                case 'bridge':
+                    if (isCurrentUserTo) {
+                        description = `You bridged ${itemName} from external wallet to your account`;
+                    } else {
+                        description = `${itemName} was bridged from ${fromUser} to ${toUser}`;
+                    }
+                    break;
+                case 'gift':
+                    if (isCurrentUserFrom) {
+                        description = `You gifted ${itemName} to ${toUser}`;
+                    } else if (isCurrentUserTo) {
+                        description = `You received ${itemName} as a gift from ${fromUser}`;
+                    } else {
+                        description = `${itemName} was gifted from ${fromUser} to ${toUser}`;
+                    }
+                    break;
+                case 'transfer':
+                    if (isCurrentUserFrom) {
+                        description = `You transferred ${itemName} to ${toUser}`;
+                    } else if (isCurrentUserTo) {
+                        description = `You received ${itemName} from ${fromUser}`;
+                    } else {
+                        description = `${itemName} was transferred from ${fromUser} to ${toUser}`;
+                    }
+                    break;
+                case 'list':
+                    if (isCurrentUserFrom) {
+                        description = `You listed ${itemName} on the marketplace for ${activity.price} credits`;
+                    } else {
+                        description = `${fromUser} listed ${itemName} on the marketplace for ${activity.price} credits`;
+                    }
+                    break;
+                case 'delist':
+                    if (isCurrentUserFrom) {
+                        description = `You removed ${itemName} from the marketplace`;
+                    } else {
+                        description = `${fromUser} removed ${itemName} from the marketplace`;
+                    }
+                    break;
+                case 'sale':
+                    if (isCurrentUserFrom) {
+                        description = `You sold ${itemName} to ${toUser} for ${activity.price} credits`;
+                    } else if (isCurrentUserTo) {
+                        description = `You purchased ${itemName} from ${fromUser} for ${activity.price} credits`;
+                    } else {
+                        description = `${itemName} was sold from ${fromUser} to ${toUser} for ${activity.price} credits`;
+                    }
+                    break;
+                case 'burn':
+                    if (isCurrentUserFrom) {
+                        description = `You burned ${itemName}`;
+                    } else {
+                        description = `${fromUser} burned ${itemName}`;
+                    }
+                    break;
+                case 'cancel_mint':
+                    if (isCurrentUserFrom) {
+                        description = `You cancelled the mint for ${itemName} and restored it to your inventory`;
+                    } else {
+                        description = `${fromUser} cancelled the mint for ${itemName}`;
+                    }
+                    break;
+                default:
+                    description = `Activity on ${itemName}`;
+            }
+
+            return {
+                ...activity,
+                description
+            };
+        });
+
         return res.json({
             message: "success",
-            data: {
-                activities,
-                pagination: {
-                    currentPage: pageOptions.page,
-                    totalPages: Math.ceil(totalCount / pageOptions.limit),
-                    totalItems: totalCount,
-                    itemsPerPage: pageOptions.limit
-                }
+            data: activitiesWithDescription,
+            pagination: {
+                currentPage: pageOptions.page,
+                totalPages: Math.ceil(totalCount / pageOptions.limit),
+                totalItems: totalCount,
+                itemsPerPage: pageOptions.limit
             }
         });
 
@@ -623,6 +707,224 @@ exports.listNFT = async (req, res) => {
         return res.status(500).json({ 
             message: "error", 
             data: "There's a problem listing the NFT." 
+        });
+    }
+};
+
+exports.checkOwnedTokens = async (req, res) => {
+    try {
+        const { id } = req.user;
+        const { tokenIds } = req.body;
+
+        // Validate input
+        if (!tokenIds || !Array.isArray(tokenIds) || tokenIds.length === 0) {
+            return res.status(400).json({ 
+                message: "failed", 
+                data: "tokenIds array is required." 
+            });
+        }
+
+        // Convert tokenIds to numbers and filter duplicates
+        const uniqueTokenIds = [...new Set(tokenIds.map(id => parseInt(id)))].filter(id => !isNaN(id));
+
+        // Find all inventory items owned by this user with matching tokenIds
+        const ownedItems = await Inventory.find({
+            owner: id,
+            tokenId: { $in: uniqueTokenIds }
+        }).select('tokenId').lean();
+
+        // Extract the tokenIds that are owned
+        const owned = ownedItems.map(item => item.tokenId);
+
+        return res.json({
+            message: "success",
+            data: {
+                owned: owned
+            }
+        });
+
+    } catch (err) {
+        console.error(`Error checking owned tokens for ${req.user?.username}:`, err);
+        return res.status(500).json({ 
+            message: "error", 
+            data: "Failed to check owned tokens." 
+        });
+    }
+};
+
+exports.claimNFT = async (req, res) => {
+    try {
+        const { id: userId, username } = req.user;
+        const { tokenId, walletAddress } = req.body;
+
+        // Validate input
+        if (!tokenId) {
+            return res.status(400).json({ 
+                message: "failed", 
+                data: "tokenId is required." 
+            });
+        }
+
+        if (!walletAddress) {
+            return res.status(400).json({ 
+                message: "failed", 
+                data: "walletAddress is required." 
+            });
+        }
+
+        const normalizedWallet = walletAddress.toLowerCase().trim();
+        const tokenIdNum = parseInt(tokenId);
+
+        if (isNaN(tokenIdNum)) {
+            return res.status(400).json({ 
+                message: "failed", 
+                data: "Invalid tokenId." 
+            });
+        }
+
+        // Check if this tokenId is already owned by this user
+        const alreadyOwned = await Inventory.findOne({
+            owner: userId,
+            tokenId: tokenIdNum
+        });
+
+        if (alreadyOwned) {
+            return res.status(400).json({ 
+                message: "failed", 
+                data: "This NFT is already in your account." 
+            });
+        }
+
+        // Find the existing NFT in the system (should exist from another owner)
+        const existingNFT = await Inventory.findOne({
+            tokenId: tokenIdNum
+        }).populate('item');
+
+        if (!existingNFT) {
+            return res.status(404).json({ 
+                message: "failed", 
+                data: "This NFT does not exist in our system." 
+            });
+        }
+
+        // Verify on-chain ownership
+        const NFT_CONTRACT_ADDRESS = process.env.NFT_CONTRACT_ADDRESS;
+        const RPC_URL = process.env.RPC_URL;
+
+        if (!NFT_CONTRACT_ADDRESS || !RPC_URL) {
+            console.error('Missing NFT_CONTRACT_ADDRESS or RPC_URL in environment variables');
+            return res.status(500).json({ 
+                message: "error", 
+                data: "Blockchain verification not configured." 
+            });
+        }
+
+        try {
+            // Connect to blockchain (compatible with ethers v5 and v6)
+            const provider = ethers.providers 
+                ? new ethers.providers.JsonRpcProvider(RPC_URL)  // ethers v5
+                : new ethers.JsonRpcProvider(RPC_URL);            // ethers v6
+            
+            // ERC721 ownerOf ABI
+            const nftAbi = [
+                "function ownerOf(uint256 tokenId) view returns (address)"
+            ];
+            
+            const nftContract = new ethers.Contract(NFT_CONTRACT_ADDRESS, nftAbi, provider);
+            
+            // Get the owner of the token from blockchain
+            const onChainOwner = await nftContract.ownerOf(tokenIdNum);
+            
+            // Compare with provided wallet address
+            if (onChainOwner.toLowerCase() !== normalizedWallet) {
+                return res.status(403).json({ 
+                    message: "failed", 
+                    data: "Wallet address does not own this NFT on-chain." 
+                });
+            }
+
+        } catch (blockchainErr) {
+            console.error(`Blockchain verification error for tokenId ${tokenIdNum}:`, blockchainErr);
+            
+            // Check if token doesn't exist
+            if (blockchainErr.message && blockchainErr.message.includes('nonexistent token')) {
+                return res.status(404).json({ 
+                    message: "failed", 
+                    data: "This NFT does not exist on-chain." 
+                });
+            }
+            
+            return res.status(500).json({ 
+                message: "error", 
+                data: "Failed to verify NFT ownership on blockchain." 
+            });
+        }
+
+        // Get previous owner info for transfer history
+        const previousOwner = await Users.findById(existingNFT.owner);
+        const previousWallet = previousOwner?.walletAddress || "unknown";
+
+        // Update the NFT owner to the new user
+        existingNFT.owner = userId;
+        
+        // Add transfer history
+        if (!existingNFT.transferHistory) {
+            existingNFT.transferHistory = [];
+        }
+        
+        existingNFT.transferHistory.push({
+            from: previousWallet,
+            to: normalizedWallet,
+            txHash: null,
+            action: "bridge",
+            timestamp: new Date()
+        });
+
+        // If it was listed, unlist it
+        if (existingNFT.isListed) {
+            existingNFT.isListed = false;
+            existingNFT.listingData = null;
+            
+            // Remove from marketplace
+            await NFTMarketplace.updateMany(
+                { inventoryItem: existingNFT._id, status: 'active' },
+                { status: 'cancelled' }
+            );
+        }
+
+        await existingNFT.save();
+
+        // Record bridge activity
+        await NFTActivity.create({
+            tokenId: tokenIdNum,
+            inventoryItem: existingNFT._id,
+            activityType: 'bridge',
+            from: existingNFT.owner !== userId ? existingNFT.owner : null,
+            fromWallet: previousWallet,
+            to: userId,
+            toWallet: normalizedWallet,
+            itemname: existingNFT.itemname,
+            type: existingNFT.type,
+            metadata: {
+                bridged: true,
+                walletAddress: normalizedWallet,
+                previousOwner: previousOwner?._id || null
+            }
+        });
+
+        return res.json({
+            message: "success",
+            data: {
+                success: true,
+                inventory: existingNFT
+            }
+        });
+
+    } catch (err) {
+        console.error(`Error claiming NFT for ${req.user?.username}:`, err);
+        return res.status(500).json({ 
+            message: "error", 
+            data: "Failed to claim NFT." 
         });
     }
 };

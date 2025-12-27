@@ -21,7 +21,8 @@ const NFTActivitySchema = new mongoose.Schema(
                 'sale',           // Sold on marketplace
                 'gift',           // Gifted to another user
                 'burn',           // NFT burned/destroyed
-                'cancel_mint'     // Mint cancelled
+                'cancel_mint',     // Mint cancelled
+                'bridge'        // Bridge on-chain nft to backend system
             ],
             required: true,
             index: true

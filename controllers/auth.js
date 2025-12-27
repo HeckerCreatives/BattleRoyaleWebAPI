@@ -150,14 +150,15 @@ exports.register = async (req, res) => {
             title: titlesdata._id 
         }], { session });
         
-        await Inventory.create([{ 
+        // Use createNonMintable for non-mintable items (titles)
+        const titleInventory = await Inventory.createNonMintable({ 
             owner: user._id, 
             itemid: titlesdata.index, 
             itemname: titlesdata.name, 
             quantity: 1, 
             type: "title", 
             isEquipped: true
-        }], { session });
+        });
 
         // Commit transaction
         await session.commitTransaction();
