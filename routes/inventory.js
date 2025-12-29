@@ -7,6 +7,7 @@ const router = require("express").Router();
 router
  .get("/getmyinventory", protectplayer, inventoryController.getMyInventory)
  .get("/nftactivity", protectplayer, inventoryController.getNFTActivity)
+ .get("/token", protectplayer, inventoryController.getTokenDetails)
  .post("/mintitem", protectplayer, inventoryController.mintItem)
  .post("/cancelmint", protectplayer, inventoryController.cancelmint)
  .post("/giftnft", protectplayer, inventoryController.giftNFT)

@@ -56,10 +56,10 @@ exports.getMyInventory = async (req, res) => {
                 sortCondition = { tokenId: -1 };
                 break;
             case 'a-z':
-                sortCondition = { itemname: 1 };
+                sortCondition = { itemname: -1 };
                 break;
             case 'z-a':
-                sortCondition = { itemname: -1 };
+                sortCondition = { itemname: 1 };
                 break;
             case 'newest':
             default:
@@ -925,6 +925,161 @@ exports.claimNFT = async (req, res) => {
         return res.status(500).json({ 
             message: "error", 
             data: "Failed to claim NFT." 
+        });
+    }
+};
+
+exports.getTokenDetails = async (req, res) => {
+    try {
+        const { tokenId } = req.query;
+
+        // Validate tokenId
+        if (!tokenId) {
+            return res.status(400).json({ 
+                message: "failed", 
+                data: "tokenId is required." 
+            });
+        }
+
+        const tokenIdNum = parseInt(tokenId);
+
+        if (isNaN(tokenIdNum)) {
+            return res.status(400).json({ 
+                message: "failed", 
+                data: "Invalid tokenId format." 
+            });
+        }
+
+        // Find the token in inventory
+        const tokenItem = await Inventory.findOne({ tokenId: tokenIdNum })
+            .populate('item', 'itemname description amount currency type rarity canBeMintedAsNFT ipfsImage')
+            .populate('owner', 'username walletAddress email')
+            .lean();
+
+        if (!tokenItem) {
+            return res.status(404).json({ 
+                message: "failed", 
+                data: "Token not found in the system." 
+            });
+        }
+
+        // Check if token is listed on marketplace
+        let marketplaceListing = null;
+        if (tokenItem.isListed) {
+            marketplaceListing = await NFTMarketplace.findOne({
+                inventoryItem: tokenItem._id,
+                status: 'active'
+            }).populate('seller', 'username walletAddress').lean();
+        }
+
+        // Get activity history for this token
+        const activityHistory = await NFTActivity.find({ tokenId: tokenIdNum })
+            .populate('from', 'username walletAddress')
+            .populate('to', 'username walletAddress')
+            .sort({ createdAt: -1 })
+            .limit(10)
+            .lean();
+
+        // Build comprehensive token details response
+        const tokenDetails = {
+            id: tokenItem._id,
+            tokenId: tokenItem.tokenId,
+            itemname: tokenItem.itemname,
+            type: tokenItem.type,
+            quantity: tokenItem.quantity,
+            ipfsImage: tokenItem.ipfsImage,
+            
+            // Owner information
+            owner: {
+                userId: tokenItem.owner?._id,
+                username: tokenItem.owner?.username,
+                walletAddress: tokenItem.owner?.walletAddress,
+                email: tokenItem.owner?.email
+            },
+            
+            // Item details (from Marketplace model)
+            itemDetails: tokenItem.item ? {
+                itemname: tokenItem.item.itemname,
+                description: tokenItem.item.description,
+                type: tokenItem.item.type,
+                rarity: tokenItem.item.rarity,
+                canBeMintedAsNFT: tokenItem.item.canBeMintedAsNFT,
+                ipfsImage: tokenItem.item.ipfsImage
+            } : null,
+            
+            // Status flags
+            status: {
+                isEquipped: tokenItem.isEquipped,
+                isMintable: tokenItem.isMintable,
+                isMinted: tokenItem.isMinted,
+                isListed: tokenItem.isListed,
+                isTransferable: tokenItem.isTransferable
+            },
+            
+            // NFT blockchain data
+            nftData: tokenItem.nftData ? {
+                tokenId: tokenItem.nftData.tokenId,
+                nftContractAddress: tokenItem.nftData.nftContractAddress,
+                marketplaceContractAddress: tokenItem.nftData.marketplaceContractAddress,
+                tokenStandard: tokenItem.nftData.tokenStandard,
+                chainId: tokenItem.nftData.chainId,
+                mintTransactionHash: tokenItem.nftData.mintTransactionHash,
+                mintedAt: tokenItem.nftData.mintedAt,
+                metadataUri: tokenItem.nftData.metadataUri
+            } : null,
+            
+            // Marketplace listing data
+            marketplaceListing: marketplaceListing ? {
+                listingId: marketplaceListing._id,
+                price: marketplaceListing.price,
+                seller: {
+                    userId: marketplaceListing.seller?._id,
+                    username: marketplaceListing.seller?.username,
+                    walletAddress: marketplaceListing.seller?.walletAddress
+                },
+                status: marketplaceListing.status,
+                listedAt: marketplaceListing.createdAt
+            } : null,
+            
+            // Listing data from inventory
+            listingData: tokenItem.listingData,
+            
+            // Transfer history
+            transferHistory: tokenItem.transferHistory || [],
+            
+            // Recent activity
+            recentActivity: activityHistory.map(activity => ({
+                activityType: activity.activityType,
+                from: {
+                    userId: activity.from?._id,
+                    username: activity.from?.username,
+                    walletAddress: activity.fromWallet
+                },
+                to: {
+                    userId: activity.to?._id,
+                    username: activity.to?.username,
+                    walletAddress: activity.toWallet
+                },
+                price: activity.price,
+                timestamp: activity.createdAt,
+                metadata: activity.metadata
+            })),
+            
+            // Timestamps
+            createdAt: tokenItem.createdAt,
+            updatedAt: tokenItem.updatedAt
+        };
+
+        return res.json({
+            message: "success",
+            data: tokenDetails
+        });
+
+    } catch (err) {
+        console.error(`Error getting token details for tokenId ${req.params.tokenId}:`, err);
+        return res.status(500).json({ 
+            message: "error", 
+            data: "Failed to retrieve token details." 
         });
     }
 };
