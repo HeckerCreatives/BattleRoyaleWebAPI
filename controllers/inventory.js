@@ -28,15 +28,15 @@ exports.getMyInventory = async (req, res) => {
         // Build match condition
         const matchCondition = { owner: id, isMintable: true };
         
-        // Filter: Exclude listed items by default
-        if (includeListed !== 'true') {
-            matchCondition.isListed = false;
-        }
+        // // Filter: Exclude listed items by default
+        // if (includeListed !== 'true') {
+        //     matchCondition.isListed = false;
+        // }
         
         // Filter: Exclude minted NFTs by default
-        if (includeNFTs !== 'true') {
-            matchCondition.isMinted = false;
-        }
+        if (includeNFTs === 'true') {
+            matchCondition.isMinted = true;
+        } 
 
         // Filter: By type (POTION, ENERGY, TITLE, etc.)
         if (type) {
@@ -67,6 +67,7 @@ exports.getMyInventory = async (req, res) => {
                 break;
         }
 
+        console.log(matchCondition)
         // Get total count for pagination
         const totalCount = await Inventory.countDocuments(matchCondition);
 

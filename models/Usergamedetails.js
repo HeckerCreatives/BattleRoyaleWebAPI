@@ -17,6 +17,10 @@ const userGameDetailsSchema = new mongoose.Schema(
         },
         xp: {
             type: Number
+        },
+        playTime: {
+            type: Number,
+            default: 0 // in seconds
         }
     },
     {

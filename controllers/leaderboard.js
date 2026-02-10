@@ -4,16 +4,19 @@ const Season = require("../models/Season");
 const Usergamedetails = require("../models/Usergamedetails");
 const { Titles, CharacterTitles } = require("../models/Titles");
 const { isEqual } = require("date-fns");
+const Matchhistory = require("../models/Matchhistory");
 
 exports.getleaderboard = async (req, res) => {
     const {id, username} = req.user
+    const { page, limit } = req.query;
 
     const lbdata = await Leaderboard.find()
     .populate({
         path: "owner",
         select: "username"
     })
-    .limit(50)
+    .limit(parseInt(limit) || 50)
+    .skip(((parseInt(page) || 1) - 1) * (parseInt(limit) || 50))
     .sort({amount: -1, updatedAt: -1}) // Sort by amount descending, then by updatedAt descending
     .then(data => data)
     .catch(err => {
@@ -21,30 +24,60 @@ exports.getleaderboard = async (req, res) => {
     })
 
     if (lbdata.length <= 0){
+        const userStats = await getMatchStats(id);
         return res.json({message: "success", data: {
-            leaderboard: {}
+            leaderboard: {},
+            userStats
         }})
     }
+    const totalDocuments = await Leaderboard.countDocuments();
+
+    const totalPages = Math.ceil(totalDocuments / (parseInt(limit) || 50));
+    const currentPage = parseInt(page) || 1;
+    const hasNextPage = currentPage < totalPages;
+    const hasPrevPage = currentPage > 1;
+
+    // Get all user IDs including current user
+    const userIds = lbdata.map(lb => lb.owner._id);
+    if (!userIds.some(uid => uid.toString() === id.toString())) {
+        userIds.push(new mongoose.Types.ObjectId(id));
+    }
+
+    // Batch fetch all stats at once
+    const allStats = await getBatchMatchStats(userIds);
+    const userStats = allStats.get(id.toString()) || { totalWins: 0, totalMatches: 0, playTime: 0 };
 
     let tempindex = 0;
-
     const data = {
-        leaderboard: {}
+        leaderboard: {},
+        pagination: {
+            totalDocuments,
+            totalPages,
+            currentPage,
+            hasNextPage,
+            hasPrevPage
+        },
+        userStats
     }
 
     lbdata.forEach(tempdata => {
-        const {owner, amount} = tempdata
+        const {owner, amount} = tempdata;
+        const matchStats = allStats.get(owner._id.toString()) || { totalWins: 0, totalMatches: 0, playTime: 0 };
 
         data.leaderboard[tempindex] = {
             user: owner.username,
-            amount: amount
+            amount: amount,
+            totalWins: matchStats.totalWins,
+            totalMatches: matchStats.totalMatches,
+            playTime: matchStats.playTime
         };
 
         tempindex++;
-    })
+    });
 
     return res.json({message: "success", data: data})
 }
+
 exports.updateuserleaderboard = async (req, res) => {
     const {id, username} = req.user
 
@@ -84,27 +117,43 @@ exports.getkillleaderboard = async (req, res) => {
     })
 
     if (lbdata.length <= 0){
+        const userStats = await getMatchStats(id);
         return res.json({message: "success", data: {
-            leaderboard: {}
+            leaderboard: {},
+            userStats
         }})
     }
 
-    let tempindex = 0;
+    // Get all user IDs including current user
+    const userIds = lbdata.map(lb => lb.owner._id);
+    if (!userIds.some(uid => uid.toString() === id.toString())) {
+        userIds.push(new mongoose.Types.ObjectId(id));
+    }
 
+    // Batch fetch all stats at once
+    const allStats = await getBatchMatchStats(userIds);
+    const userStats = allStats.get(id.toString()) || { totalWins: 0, totalMatches: 0, playTime: 0 };
+
+    let tempindex = 0;
     const data = {
-        leaderboard: {}
+        leaderboard: {},
+        userStats
     }
 
     lbdata.forEach(tempdata => {
-        const {owner, kill} = tempdata
+        const {owner, kill} = tempdata;
+        const matchStats = allStats.get(owner._id.toString()) || { totalWins: 0, totalMatches: 0, playTime: 0 };
 
         data.leaderboard[tempindex] = {
             user: owner.username,
-            amount: kill
+            amount: kill,
+            totalWins: matchStats.totalWins,
+            totalMatches: matchStats.totalMatches,
+            playTime: matchStats.playTime
         };
 
         tempindex++;
-    })
+    });
 
     return res.json({message: "success", data: data})
 }
@@ -125,27 +174,43 @@ exports.getdeathleaderboard = async (req, res) => {
     })
 
     if (lbdata.length <= 0){
+        const userStats = await getMatchStats(id);
         return res.json({message: "success", data: {
-            leaderboard: {}
+            leaderboard: {},
+            userStats
         }})
     }
 
-    let tempindex = 0;
+    // Get all user IDs including current user
+    const userIds = lbdata.map(lb => lb.owner._id);
+    if (!userIds.some(uid => uid.toString() === id.toString())) {
+        userIds.push(new mongoose.Types.ObjectId(id));
+    }
 
+    // Batch fetch all stats at once
+    const allStats = await getBatchMatchStats(userIds);
+    const userStats = allStats.get(id.toString()) || { totalWins: 0, totalMatches: 0, playTime: 0 };
+
+    let tempindex = 0;
     const data = {
-        leaderboard: {}
+        leaderboard: {},
+        userStats
     }
 
     lbdata.forEach(tempdata => {
-        const {owner, death} = tempdata
+        const {owner, death} = tempdata;
+        const matchStats = allStats.get(owner._id.toString()) || { totalWins: 0, totalMatches: 0, playTime: 0 };
 
         data.leaderboard[tempindex] = {
             user: owner.username,
-            amount: death
+            amount: death,
+            totalWins: matchStats.totalWins,
+            totalMatches: matchStats.totalMatches,
+            playTime: matchStats.playTime
         };
 
         tempindex++;
-    })
+    });
 
     return res.json({message: "success", data: data})
 }
@@ -166,27 +231,43 @@ exports.getlevelleaderboard = async (req, res) =>{
     })
 
     if (lbdata.length <= 0){
+        const userStats = await getMatchStats(id);
         return res.json({message: "success", data: {
-            leaderboard: {}
+            leaderboard: {},
+            userStats
         }})
     }
 
-    let tempindex = 0;
+    // Get all user IDs including current user
+    const userIds = lbdata.map(lb => lb.owner._id);
+    if (!userIds.some(uid => uid.toString() === id.toString())) {
+        userIds.push(new mongoose.Types.ObjectId(id));
+    }
 
+    // Batch fetch all stats at once
+    const allStats = await getBatchMatchStats(userIds);
+    const userStats = allStats.get(id.toString()) || { totalWins: 0, totalMatches: 0, playTime: 0 };
+
+    let tempindex = 0;
     const data = {
-        leaderboard: {}
+        leaderboard: {},
+        userStats
     }
 
     lbdata.forEach(tempdata => {
-        const {owner, level} = tempdata
+        const {owner, level} = tempdata;
+        const matchStats = allStats.get(owner._id.toString()) || { totalWins: 0, totalMatches: 0, playTime: 0 };
 
         data.leaderboard[tempindex] = {
             user: owner.username,
-            amount: level
+            amount: level,
+            totalWins: matchStats.totalWins,
+            totalMatches: matchStats.totalMatches,
+            playTime: matchStats.playTime
         };
 
         tempindex++;
-    })
+    });
 
     return res.json({message: "success", data: data})
 }
@@ -806,7 +887,85 @@ exports.getleaderboardhistoryoptions = async (req, res) => {
 //         });
 //     }
 // }
+// Batch fetch match statistics for multiple users using aggregation pipeline
+async function getBatchMatchStats(userIds) {
+    try {
+        // Aggregate match stats (total matches and wins) for all users at once
+        const matchStats = await Matchhistory.aggregate([
+            {
+                $match: {
+                    owner: { $in: userIds }
+                }
+            },
+            {
+                $group: {
+                    _id: "$owner",
+                    totalMatches: { $sum: 1 },
+                    totalWins: {
+                        $sum: {
+                            $cond: [{ $eq: ["$placement", 1] }, 1, 0]
+                        }
+                    }
+                }
+            }
+        ]);
 
+        // Get playTime from Usergamedetails for all users at once
+        const gameDetails = await Usergamedetails.find(
+            { owner: { $in: userIds } },
+            { owner: 1, playTime: 1 }
+        );
+
+        // Create a Map for fast lookups
+        const statsMap = new Map();
+
+        // Initialize all users with default values
+        userIds.forEach(userId => {
+            statsMap.set(userId.toString(), {
+                totalWins: 0,
+                totalMatches: 0,
+                playTime: 0
+            });
+        });
+
+        // Populate match stats
+        matchStats.forEach(stat => {
+            const key = stat._id.toString();
+            if (statsMap.has(key)) {
+                statsMap.get(key).totalWins = stat.totalWins;
+                statsMap.get(key).totalMatches = stat.totalMatches;
+            }
+        });
+
+        // Populate playTime
+        gameDetails.forEach(detail => {
+            const key = detail.owner.toString();
+            if (statsMap.has(key)) {
+                statsMap.get(key).playTime = detail.playTime || 0;
+            }
+        });
+
+        return statsMap;
+    } catch (error) {
+        console.log(`Error calculating batch match stats: ${error}`);
+        // Return empty map on error
+        const statsMap = new Map();
+        userIds.forEach(userId => {
+            statsMap.set(userId.toString(), {
+                totalWins: 0,
+                totalMatches: 0,
+                playTime: 0
+            });
+        });
+        return statsMap;
+    }
+}
+
+// Helper function for single user (kept for backward compatibility if needed)
+async function getMatchStats(userId) {
+    const statsMap = await getBatchMatchStats([new mongoose.Types.ObjectId(userId)]);
+    return statsMap.get(userId.toString()) || { totalWins: 0, totalMatches: 0, playTime: 0 };
+}
 // exports.getleaderboardhistoryoptions = async (req, res) => {
 //     try {
 //         // Get unique index values with their corresponding event details
