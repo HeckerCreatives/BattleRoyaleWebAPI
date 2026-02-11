@@ -490,6 +490,21 @@ exports.walletLogin = async (req, res) => {
             });
         }
 
+        // Validate signature format
+        if (!signature.startsWith('0x')) {
+            return res.status(400).json({ 
+                message: "bad-request", 
+                data: "Signature must start with '0x' prefix!" 
+            });
+        }
+
+        if (signature.length !== 132) {
+            return res.status(400).json({ 
+                message: "bad-request", 
+                data: `Invalid signature length! Expected 132 characters (0x + 130 hex), got ${signature.length}` 
+            });
+        }
+
         const normalizedAddress = walletAddress.toLowerCase();
 
         // Find user by wallet address
@@ -520,20 +535,39 @@ exports.walletLogin = async (req, res) => {
         // Verify signature
         const message = `Sign this message to authenticate with your wallet:\n\nNonce: ${user.walletNonce}\nWallet: ${normalizedAddress}`;
         
+        console.log('walletLogin - Verification Details:', {
+            walletAddress: normalizedAddress,
+            nonce: user.walletNonce,
+            messageLength: message.length,
+            signatureLength: signature?.length || 0,
+            signaturePrefix: signature?.substring(0, 10) || 'none'
+        });
+        
         try {
             const recoveredAddress = ethers.utils.verifyMessage(message, signature);
+            console.log('walletLogin - Recovered address:', recoveredAddress);
             
             if (recoveredAddress.toLowerCase() !== normalizedAddress) {
+                console.error('walletLogin - Address mismatch:', {
+                    expected: normalizedAddress,
+                    recovered: recoveredAddress.toLowerCase()
+                });
                 return res.status(401).json({ 
                     message: "failed", 
                     data: "Invalid signature!" 
                 });
             }
         } catch (verifyError) {
-            console.error('Signature verification error:', verifyError);
+            console.error('walletLogin - Signature verification error:', {
+                error: verifyError.message,
+                stack: verifyError.stack,
+                signatureLength: signature?.length || 0,
+                messageLength: message.length,
+                walletAddress: normalizedAddress
+            });
             return res.status(401).json({ 
                 message: "failed", 
-                data: "Invalid signature format!" 
+                data: `Invalid signature format: ${verifyError.message}` 
             });
         }
 
@@ -674,6 +708,21 @@ exports.linkWallet = async (req, res) => {
             });
         }
 
+        // Validate signature format
+        if (!signature.startsWith('0x')) {
+            return res.status(400).json({ 
+                message: "bad-request", 
+                data: "Signature must start with '0x' prefix!" 
+            });
+        }
+
+        if (signature.length !== 132) {
+            return res.status(400).json({ 
+                message: "bad-request", 
+                data: `Invalid signature length! Expected 132 characters (0x + 130 hex), got ${signature.length}` 
+            });
+        }
+
         const normalizedAddress = walletAddress.toLowerCase();
 
         const userAccount = await Users.findById(decodedToken.id);
@@ -737,20 +786,39 @@ exports.linkWallet = async (req, res) => {
         // Verify signature
         const message = `Sign this message to authenticate with your wallet:\n\nNonce: ${user.walletNonce}\nWallet: ${normalizedAddress}`;
         
+        console.log('linkWallet - Verification Details:', {
+            walletAddress: normalizedAddress,
+            nonce: user.walletNonce,
+            messageLength: message.length,
+            signatureLength: signature?.length || 0,
+            signaturePrefix: signature?.substring(0, 10) || 'none'
+        });
+        
         try {
             const recoveredAddress = ethers.utils.verifyMessage(message, signature);
+            console.log('linkWallet - Recovered address:', recoveredAddress);
             
             if (recoveredAddress.toLowerCase() !== normalizedAddress) {
+                console.error('linkWallet - Address mismatch:', {
+                    expected: normalizedAddress,
+                    recovered: recoveredAddress.toLowerCase()
+                });
                 return res.status(401).json({ 
                     message: "failed", 
                     data: "Invalid signature!" 
                 });
             }
         } catch (verifyError) {
-            console.error('Signature verification error:', verifyError);
+            console.error('linkWallet - Signature verification error:', {
+                error: verifyError.message,
+                stack: verifyError.stack,
+                signatureLength: signature?.length || 0,
+                messageLength: message.length,
+                walletAddress: normalizedAddress
+            });
             return res.status(401).json({ 
                 message: "failed", 
-                data: "Invalid signature format!" 
+                data: `Invalid signature format: ${verifyError.message}` 
             });
         }
 
