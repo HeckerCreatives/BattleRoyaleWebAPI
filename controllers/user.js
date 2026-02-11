@@ -354,7 +354,7 @@ exports.getUserDetails = async (req, res) => {
     const userData = await Userdetails.findOne({ owner: new mongoose.Types.ObjectId(id)})
     .populate({
         path: "owner",
-        select: "username status gametoken webtoken"
+        select: "username status gametoken webtoken walletAddress"
     })
     .lean()
     .then(data => data)
@@ -381,7 +381,7 @@ exports.getUserDetails = async (req, res) => {
         status: userData.owner.status,
         gametoken: userData.owner.gametoken,
         webtoken: userData.owner.webtoken,
-        walletAddress: userData.walletAddress
+        walletAddress: userData.owner.walletAddress
     }
     
     return res.status(200).json({ message: "success", data: finalData})
