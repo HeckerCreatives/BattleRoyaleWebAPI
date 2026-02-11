@@ -381,6 +381,7 @@ exports.getUserDetails = async (req, res) => {
         status: userData.owner.status,
         gametoken: userData.owner.gametoken,
         webtoken: userData.owner.webtoken,
+        walletAddress: userData.walletAddress
     }
     
     return res.status(200).json({ message: "success", data: finalData})
