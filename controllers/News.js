@@ -89,7 +89,7 @@ exports.getnewslist = async (req, res) => {
 
    const finalpages = Math.ceil(totalCount / pageOptions.limit)
    const data = {
-    totalpages: finalpages,
+    totalPages: finalpages,
     news: []
    }
 
