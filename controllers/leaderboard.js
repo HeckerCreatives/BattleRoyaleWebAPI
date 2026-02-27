@@ -8,7 +8,7 @@ const Matchhistory = require("../models/Matchhistory");
 
 exports.getleaderboard = async (req, res) => {
     const {id, username} = req.user
-    const { page, limit, filter, type } = req.query;
+    const { page, limit, type } = req.query;
 
     const leaderboardType = type || 'points';
     const pageLimit = parseInt(limit) || 50;
@@ -97,27 +97,18 @@ exports.getleaderboard = async (req, res) => {
     const hasNextPage = currentPage < totalPages;
     const hasPrevPage = currentPage > 1;
 
-    // Get all user IDs including current user
-    const userIds = lbdata.map(lb => lb.owner._id);
-    if (!userIds.some(uid => uid.toString() === id.toString())) {
-        userIds.push(new mongoose.Types.ObjectId(id));
-    }
 
     // Batch fetch all stats
-    const allStats = await getBatchMatchStats(userIds);
+    const allStats = await getBatchMatchStats(id);
     const userStats = allStats.get(id.toString()) || { totalWins: 0, totalMatches: 0, playTime: 0 };
 
     // Build leaderboard response
     const leaderboard = {};
     lbdata.forEach((entry, index) => {
-        const matchStats = allStats.get(entry.owner._id.toString()) || { totalWins: 0, totalMatches: 0, playTime: 0 };
         
         leaderboard[index] = {
             user: entry.owner.username,
             amount: entry[amountField],
-            totalWins: matchStats.totalWins,
-            totalMatches: matchStats.totalMatches,
-            playTime: matchStats.playTime
         };
     });
 
