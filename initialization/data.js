@@ -84,198 +84,198 @@ const marketdata = [
         ipfsImage: "https://gateway.pinata.cloud/ipfs/bafybeihhvi76az4xjhrv6cv2d6hkmr3ocheol5eos2igxnroixaymthlxm/xp_potion_x10.png"
     },
     //#endregion
-    //#region TITLES
-    // {
-    //     itemid: "TITLE-000",
-    //     itemname: "RISE OF FEARLESS",
-    //     description: "Awarded to the top killer.",
-    //     amount: "0",
-    //     currency: "points",
-    //     type: "title",
-    //     consumable: "0",
-    //     rarity: "Common"
-    // },
-    // {
-    //     itemid: "TITLE-001",
-    //     itemname: "KILLING KING",
-    //     description: "Awarded to the top killer.",
-    //     amount: "750",
-    //     currency: "points",
-    //     type: "title",
-    //     consumable: "0",
-    //     rarity: "Legendary"
-    // },
-    // {
-    //     itemid: "TITLE-002",
-    //     itemname: "ULTIMATE PLAYER",
-    //     description: "Awarded to the ultimate player.",
-    //     amount: "750",
-    //     currency: "points",
-    //     type: "title",
-    //     consumable: "0",
-    //     rarity: "Legendary"
-    // },
-    // {
-    //     itemid: "TITLE-003",
-    //     itemname: "GRIM REAPER",
-    //     description: "Awarded for most deaths.",
-    //     amount: "750",
-    //     currency: "points",
-    //     type: "title",
-    //     consumable: "0",
-    //     rarity: "Legendary"
-    // },
-    // {
-    //     itemid: "TITLE-004",
-    //     itemname: "Fearless",
-    //     description: "Awarded for the players who are not afraid to face death.",
-    //     amount: "750",
-    //     currency: "points",
-    //     type: "title",
-    //     consumable: "0",
-    //     rarity: "Legendary"
-    // },
-    // {
-    //     itemid: "TITLE-005",
-    //     itemname: "The Dune Phantom",
-    //     description: "",
-    //     amount: "750",
-    //     currency: "points",
-    //     type: "title",
-    //     consumable: "0",
-    //     rarity: "Legendary"
-    // },
-    // {
-    //     itemid: "TITLE-006",
-    //     itemname: "Lion of Mali",
-    //     description: "",
-    //     amount: "750",
-    //     currency: "points",
-    //     type: "title",
-    //     consumable: "0",
-    //     rarity: "Legendary"
-    // },
-    // {
-    //     itemid: "TITLE-007",
-    //     itemname: "Mansa's Shield",
-    //     description: "",
-    //     amount: "750",
-    //     currency: "points",
-    //     type: "title",
-    //     consumable: "0",
-    //     rarity: "Legendary"
-    // },
-    // {
-    //     itemid: "TITLE-008",
-    //     itemname: "Spear of Shaka",
-    //     description: "",
-    //     amount: "750",
-    //     currency: "points",
-    //     type: "title",
-    //     consumable: "0",
-    //     rarity: "Legendary"
-    // },
-    // {
-    //     itemid: "TITLE-009",
-    //     itemname: "Ethiopian Marksman",
-    //     description: "",
-    //     amount: "500",
-    //     currency: "points",
-    //     type: "title",
-    //     consumable: "0",
-    //     rarity: "Epic"
-    // },
-    // {
-    //     itemid: "TITLE-010",
-    //     itemname: "Rift Valley Sniper",
-    //     description: "",
-    //     amount: "500",
-    //     currency: "points",
-    //     type: "title",
-    //     consumable: "0",
-    //     rarity: "Epic"
-    // },
-    // {
-    //     itemid: "TITLE-011",
-    //     itemname: "Zambezi Marksman",
-    //     description: "",
-    //     amount: "500",
-    //     currency: "points",
-    //     type: "title",
-    //     consumable: "0",
-    //     rarity: "Epic"
-    // },
-    // {
-    //     itemid: "TITLE-012",
-    //     itemname: "Oya's Warrior",
-    //     description: "",
-    //     amount: "500",
-    //     currency: "points",
-    //     type: "title",
-    //     consumable: "0",
-    //     rarity: "Epic"
-    // },
-    // {
-    //     itemid: "TITLE-013",
-    //     itemname: "Dahomey Champion",
-    //     description: "",
-    //     amount: "500",
-    //     currency: "points",
-    //     type: "title",
-    //     consumable: "0",
-    //     rarity: "Epic"
-    // },
-    // {
-    //     itemid: "TITLE-014",
-    //     itemname: "African Hawkeye",
-    //     description: "",
-    //     amount: "250",
-    //     currency: "points",
-    //     type: "title",
-    //     consumable: "0",
-    //     rarity: "Uncommon"
-    // },
-    // {
-    //     itemid: "TITLE-015",
-    //     itemname: "The Lion's Roar",
-    //     description: "",
-    //     amount: "250",
-    //     currency: "points",
-    //     type: "title",
-    //     consumable: "0",
-    //     rarity: "Uncommon"
-    // },
-    // {
-    //     itemid: "TITLE-016",
-    //     itemname: "Zulu Warrior",
-    //     description: "",
-    //     amount: "250",
-    //     currency: "points",
-    //     type: "title",
-    //     consumable: "0",
-    //     rarity: "Uncommon"
-    // },
-    // {
-    //     itemid: "TITLE-017",
-    //     itemname: "Nigerian Vanguard",
-    //     description: "",
-    //     amount: "250",
-    //     currency: "points",
-    //     type: "title",
-    //     consumable: "0",
-    //     rarity: "Uncommon"
-    // },
-    // {
-    //     itemid: "TITLE-018",
-    //     itemname: "Head Hunter",
-    //     description: "",
-    //     amount: "250",
-    //     currency: "points",
-    //     type: "title",
-    //     consumable: "0",
-    //     rarity: "Uncommon"
-    // }
-    //#endregion
+    // #region TITLES
+    {
+        itemid: "TITLE-000",
+        itemname: "RISE OF FEARLESS",
+        description: "Awarded to the top killer.",
+        amount: "0",
+        currency: "points",
+        type: "title",
+        consumable: "0",
+        rarity: "common"
+    },
+    {
+        itemid: "TITLE-001",
+        itemname: "KILLING KING",
+        description: "Awarded to the top killer.",
+        amount: "750",
+        currency: "points",
+        type: "title",
+        consumable: "0",
+        rarity: "legendary"
+    },
+    {
+        itemid: "TITLE-002",
+        itemname: "ULTIMATE PLAYER",
+        description: "Awarded to the ultimate player.",
+        amount: "750",
+        currency: "points",
+        type: "title",
+        consumable: "0",
+        rarity: "legendary"
+    },
+    {
+        itemid: "TITLE-003",
+        itemname: "GRIM REAPER",
+        description: "Awarded for most deaths.",
+        amount: "750",
+        currency: "points",
+        type: "title",
+        consumable: "0",
+        rarity: "legendary"
+    },
+    {
+        itemid: "TITLE-004",
+        itemname: "Fearless",
+        description: "Awarded for the players who are not afraid to face death.",
+        amount: "750",
+        currency: "points",
+        type: "title",
+        consumable: "0",
+        rarity: "legendary"
+    },
+    {
+        itemid: "TITLE-005",
+        itemname: "The Dune Phantom",
+        description: "",
+        amount: "750",
+        currency: "points",
+        type: "title",
+        consumable: "0",
+        rarity: "legendary"
+    },
+    {
+        itemid: "TITLE-006",
+        itemname: "Lion of Mali",
+        description: "",
+        amount: "750",
+        currency: "points",
+        type: "title",
+        consumable: "0",
+        rarity: "legendary"
+    },
+    {
+        itemid: "TITLE-007",
+        itemname: "Mansa's Shield",
+        description: "",
+        amount: "750",
+        currency: "points",
+        type: "title",
+        consumable: "0",
+        rarity: "legendary"
+    },
+    {
+        itemid: "TITLE-008",
+        itemname: "Spear of Shaka",
+        description: "",
+        amount: "750",
+        currency: "points",
+        type: "title",
+        consumable: "0",
+        rarity: "legendary"
+    },
+    {
+        itemid: "TITLE-009",
+        itemname: "Ethiopian Marksman",
+        description: "",
+        amount: "500",
+        currency: "points",
+        type: "title",
+        consumable: "0",
+        rarity: "epic"
+    },
+    {
+        itemid: "TITLE-010",
+        itemname: "Rift Valley Sniper",
+        description: "",
+        amount: "500",
+        currency: "points",
+        type: "title",
+        consumable: "0",
+        rarity: "epic"
+    },
+    {
+        itemid: "TITLE-011",
+        itemname: "Zambezi Marksman",
+        description: "",
+        amount: "500",
+        currency: "points",
+        type: "title",
+        consumable: "0",
+        rarity: "epic"
+    },
+    {
+        itemid: "TITLE-012",
+        itemname: "Oya's Warrior",
+        description: "",
+        amount: "500",
+        currency: "points",
+        type: "title",
+        consumable: "0",
+        rarity: "epic"
+    },
+    {
+        itemid: "TITLE-013",
+        itemname: "Dahomey Champion",
+        description: "",
+        amount: "500",
+        currency: "points",
+        type: "title",
+        consumable: "0",
+        rarity: "epic"
+    },
+    {
+        itemid: "TITLE-014",
+        itemname: "African Hawkeye",
+        description: "",
+        amount: "250",
+        currency: "points",
+        type: "title",
+        consumable: "0",
+        rarity: "uncommon"
+    },
+    {
+        itemid: "TITLE-015",
+        itemname: "The Lion's Roar",
+        description: "",
+        amount: "250",
+        currency: "points",
+        type: "title",
+        consumable: "0",
+        rarity: "uncommon"
+    },
+    {
+        itemid: "TITLE-016",
+        itemname: "Zulu Warrior",
+        description: "",
+        amount: "250",
+        currency: "points",
+        type: "title",
+        consumable: "0",
+        rarity: "uncommon"
+    },
+    {
+        itemid: "TITLE-017",
+        itemname: "Nigerian Vanguard",
+        description: "",
+        amount: "250",
+        currency: "points",
+        type: "title",
+        consumable: "0",
+        rarity: "uncommon"
+    },
+    {
+        itemid: "TITLE-018",
+        itemname: "Head Hunter",
+        description: "",
+        amount: "250",
+        currency: "points",
+        type: "title",
+        consumable: "0",
+        rarity: "uncommon"
+    }
+    // #endregion
 ];
 
 const titlesdata = [
@@ -284,28 +284,133 @@ const titlesdata = [
         index: "TITLE-000",
         name: "Rise of Fearless",
         description: "Title for new players",
-        rarity: "Legendary"
+        rarity: "legendary"
     },
     {
         category: "kill",
         index: "TITLE-001",
         name: "KILLING KING",
         description: "Awarded to the top killer.",
-        rarity: "Legendary"
+        rarity: "legendary"
     },
     {
         category: "kill",
         index: "TITLE-002",
         name: "ULTIMATE PLAYER",
         description: "Awarded to the ultimate player.",
-        rarity: "Legendary"
+        rarity: "legendary"
     },
     {
         category: "death",
         index: "TITLE-003",
         name: "GRIM REAPER",
         description: "Awarded for most deaths.",
-        rarity: "Legendary"
+        rarity: "legendary"
+    },
+    {
+        category: "kill",
+        index: "TITLE-004",
+        name: "Fearless",
+        description: "Awarded for the players who are not afraid to face death.",
+        rarity: "legendary"
+    },
+    {
+        category: "kill",
+        index: "TITLE-005",
+        name: "The Dune Phantom",
+        description: "A mysterious warrior of the sands.",
+        rarity: "legendary"
+    },
+    {
+        category: "kill",
+        index: "TITLE-006",
+        name: "Lion of Mali",
+        description: "A fearless leader and warrior.",
+        rarity: "legendary"
+    },
+    {
+        category: "kill",
+        index: "TITLE-007",
+        name: "Mansa's Shield",
+        description: "A defender of the realm.",
+        rarity: "legendary"
+    },
+    {
+        category: "kill",
+        index: "TITLE-008",
+        name: "Spear of Shaka",
+        description: "A master warrior of legend.",
+        rarity: "legendary"
+    },
+    {
+        category: "kill",
+        index: "TITLE-009",
+        name: "Ethiopian Marksman",
+        description: "Precision and accuracy personified.",
+        rarity: "epic"
+    },
+    {
+        category: "kill",
+        index: "TITLE-010",
+        name: "Rift Valley Sniper",
+        description: "A sharpshooter among warriors.",
+        rarity: "epic"
+    },
+    {
+        category: "kill",
+        index: "TITLE-011",
+        name: "Zambezi Marksman",
+        description: "A master of ranged combat.",
+        rarity: "epic"
+    },
+    {
+        category: "kill",
+        index: "TITLE-012",
+        name: "Oya's Warrior",
+        description: "A warrior blessed by the storm.",
+        rarity: "epic"
+    },
+    {
+        category: "kill",
+        index: "TITLE-013",
+        name: "Dahomey Champion",
+        description: "A fierce warrior of legend.",
+        rarity: "epic"
+    },
+    {
+        category: "kill",
+        index: "TITLE-014",
+        name: "African Hawkeye",
+        description: "Sharp vision, sharper aim.",
+        rarity: "uncommon"
+    },
+    {
+        category: "kill",
+        index: "TITLE-015",
+        name: "The Lion's Roar",
+        description: "A fearsome warrior's battle cry.",
+        rarity: "uncommon"
+    },
+    {
+        category: "kill",
+        index: "TITLE-016",
+        name: "Zulu Warrior",
+        description: "A warrior of the Zulu kingdom.",
+        rarity: "uncommon"
+    },
+    {
+        category: "kill",
+        index: "TITLE-017",
+        name: "Nigerian Vanguard",
+        description: "A warrior at the forefront of battle.",
+        rarity: "uncommon"
+    },
+    {
+        category: "kill",
+        index: "TITLE-018",
+        name: "Head Hunter",
+        description: "Hunts the most dangerous prey.",
+        rarity: "uncommon"
     }
 ]
 
