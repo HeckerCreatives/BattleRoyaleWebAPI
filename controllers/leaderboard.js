@@ -88,7 +88,14 @@ exports.getleaderboard = async (req, res) => {
         const userStats = await getMatchStats(id);
         return res.json({message: "success", data: {
             leaderboard: {},
-            userStats
+            userStats,
+            pagination: {
+                totalDocuments: 0,
+                totalPages: 0,
+                currentPage: currentPage,
+                hasNextPage: false,
+                hasPrevPage: false
+            }
         }})
     }
 
