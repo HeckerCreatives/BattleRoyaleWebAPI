@@ -97,9 +97,8 @@ exports.getleaderboard = async (req, res) => {
     const hasNextPage = currentPage < totalPages;
     const hasPrevPage = currentPage > 1;
 
-
     // Batch fetch all stats
-    const allStats = await getBatchMatchStats(id);
+    const allStats = await getBatchMatchStats([id]);
     const userStats = allStats.get(id.toString()) || { totalWins: 0, totalMatches: 0, playTime: 0 };
 
     // Build leaderboard response
