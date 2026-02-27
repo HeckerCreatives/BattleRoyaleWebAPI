@@ -18,7 +18,13 @@ const userGameDetailsSchema = new mongoose.Schema(
         xp: {
             type: Number
         },
-        playTime: {
+        wins: {
+            type: Number
+        },
+        losses: {
+            type: Number
+        },
+        playtime: {
             type: Number,
             default: 0 // in seconds
         }
