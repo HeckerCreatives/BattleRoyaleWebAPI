@@ -5,7 +5,7 @@ const Sociallinks = require("../models/Sociallinks")
 const Version = require("../models/Version")
 const Marketplace = require("../models/Marketplace")
 const {Titles} = require("../models/Titles")
-const {marketdata, titlesdata} = require("./data")
+const {marketdata, titlesdata, questdata} = require("./data")
 
 
 exports.initialize = async () => {
@@ -120,6 +120,13 @@ exports.initialize = async () => {
             return
         })
         console.log("Titles initialized");
+    }
+
+    const questCount = await Quest.countDocuments()
+
+    if (questCount <= 0) {
+        await Quest.insertMany(questdata)
+        console.log(`Quests initialized`);
     }
 
     console.log("SERVER DATA INITIALIZED")

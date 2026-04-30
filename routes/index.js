@@ -23,6 +23,7 @@ const routers = app => {
     app.use("/user", require("./user"));
     app.use("/usergamedetails", require("./usergamedetails"))
     app.use("/version", require("./version"))
+    app.use("/quest", require("./quest"))
 };
 
 module.exports = routers;
