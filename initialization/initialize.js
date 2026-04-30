@@ -6,6 +6,7 @@ const Version = require("../models/Version")
 const Marketplace = require("../models/Marketplace")
 const {Titles} = require("../models/Titles")
 const {marketdata, titlesdata, questdata} = require("./data")
+const { Quest } = require("../models/Quest")
 
 
 exports.initialize = async () => {

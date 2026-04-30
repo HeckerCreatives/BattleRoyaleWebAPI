@@ -19,7 +19,7 @@ exports.getallquests = async (req, res) => {
 
 exports.getquest = async (req, res) => {
     try {
-        const { questid, id } = req.body;
+        const { questid, id } = req.query;
         const query = id ? { _id: id } : questid ? { questid } : {};
 
         if (!id && !questid) {
@@ -256,6 +256,18 @@ exports.resetplayerads = async (req, res) => {
 
         const result = await Ads.deleteMany({ owner: new mongoose.Types.ObjectId(userId) });
         return res.status(200).json({ message: "success", data: `${result.deletedCount} ads record(s) deleted for player.` });
+    } catch (ex) {
+        return res.status(500).json({ message: "failed", data: ex.message });
+    }
+};
+
+
+exports.resetallwatchads = async (req, res) => {
+    try {
+        const result = await Ads.updateMany(
+            { $set: { isClaimed: false } }
+        );
+        return res.status(200).json({ message: "success", data: `${result.modifiedCount} WATCH_ADS record(s) reset.` });
     } catch (ex) {
         return res.status(500).json({ message: "failed", data: ex.message });
     }
