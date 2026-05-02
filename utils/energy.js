@@ -1,5 +1,5 @@
 const { default: mongoose } = require("mongoose");
-const Energy = require("../models/Energy");
+const { Energy } = require("../models/Energy");
 
 
 exports.addEnergy = async (userId, amount) => {

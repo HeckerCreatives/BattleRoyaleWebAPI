@@ -1,5 +1,5 @@
 const { default: mongoose } = require("mongoose");
-const Leaderboard = require("../models/Leaderboard");
+const {Leaderboard} = require("../models/Leaderboard");
 
 exports.addPoints = async (userId, amount, session = null) => {
     try {
