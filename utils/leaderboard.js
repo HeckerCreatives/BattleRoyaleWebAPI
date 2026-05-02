@@ -7,15 +7,17 @@ exports.addPoints = async (userId, amount, session = null) => {
             ? new mongoose.Types.ObjectId(userId) 
             : userId;
 
+        let newamount = Math.round(amount)
+
         const leaderboard = await Leaderboard.findOne({ owner: ownerId }).session(session);
         if (leaderboard) {
             // Update existing points
-            leaderboard.amount += amount;
+            leaderboard.amount += newamount;
             await leaderboard.save({ session });
             return leaderboard.amount;
         } else {
             // Create new leaderboard entry
-            const newEntry = await Leaderboard.create([{ owner: ownerId, amount }], { session });
+            const newEntry = await Leaderboard.create([{ owner: ownerId, amount: newamount }], { session });
             return newEntry.amount;
         }
     } catch (err) {
