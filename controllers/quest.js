@@ -42,6 +42,12 @@ exports.createquest = async (req, res) => {
             return res.status(400).json({ message: "bad-request", data: "questid, title, type, and target are required." });
         }
 
+        const totalQuests = await Quest.countDocuments();
+
+        if (totalQuests >= 8) {
+            return res.status(400).json({ message: "bad-request", data: "Maximum number of quests (8) has been reached." });
+        }
+
         if (!VALID_QUEST_TYPES.includes(type)) {
             return res.status(400).json({ message: "bad-request", data: `type must be one of: ${VALID_QUEST_TYPES.join(", ")}.` });
         }
@@ -56,6 +62,7 @@ exports.createquest = async (req, res) => {
                 return res.status(400).json({ message: "bad-request", data: `Invalid reward type "${reward.type}". Must be one of: ${VALID_REWARD_TYPES.join(", ")}.` });
             }
         }
+        
 
         const existing = await Quest.findOne({ questid });
         if (existing) {
@@ -71,7 +78,7 @@ exports.createquest = async (req, res) => {
 
 exports.updatequest = async (req, res) => {
     try {
-        const { id, questid, title, description, type, target, isSkippable, isActive } = req.body;
+        const { id, questid, title, description, type, target, rewards, isSkippable, isActive } = req.body;
 
         if (!id && !questid) {
             return res.status(400).json({ message: "bad-request", data: "id or questid is required." });
@@ -81,6 +88,20 @@ exports.updatequest = async (req, res) => {
             return res.status(400).json({ message: "bad-request", data: `type must be one of: ${VALID_QUEST_TYPES.join(", ")}.` });
         }
 
+        if (rewards !== undefined) {
+            if (!Array.isArray(rewards)) {
+                return res.status(400).json({ message: "bad-request", data: "rewards must be an array." });
+            }
+            if (rewards.length > MAX_REWARDS) {
+                return res.status(400).json({ message: "bad-request", data: `A quest can have at most ${MAX_REWARDS} rewards.` });
+            }
+            for (const reward of rewards) {
+                if (!VALID_REWARD_TYPES.includes(reward.type)) {
+                    return res.status(400).json({ message: "bad-request", data: `Invalid reward type "${reward.type}". Must be one of: ${VALID_REWARD_TYPES.join(", ")}.` });
+                }
+            }
+        }
+
         const query = id ? { _id: id } : { questid };
 
         const updates = {};
@@ -88,6 +109,7 @@ exports.updatequest = async (req, res) => {
         if (description !== undefined) updates.description = description;
         if (type !== undefined) updates.type = type;
         if (target !== undefined) updates.target = target;
+        if (rewards !== undefined) updates.rewards = rewards;
         if (isSkippable !== undefined) updates.isSkippable = isSkippable;
         if (isActive !== undefined) updates.isActive = isActive;
 
