@@ -1,10 +1,10 @@
 const router = require("express").Router();
 const marketplaceController = require("../controllers/marketplace");
-const { protectplayer, protectsuperadmin } = require("../middleware/middleware");
+const { protectplayer, protectsuperadmin, protectallusers } = require("../middleware/middleware");
 
 // ==================== PLAYER ROUTES ====================
 router
-	.get("/items", protectplayer, marketplaceController.getmarketplaceitems)
+	.get("/items", protectallusers, marketplaceController.getmarketplaceitems)
 	.post("/buy", protectplayer, marketplaceController.buymarketplaceitem)
 	.get("/inventory", protectplayer, marketplaceController.getuserinventory)
 	.post("/use", protectplayer, marketplaceController.useitem)
