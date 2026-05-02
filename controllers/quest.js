@@ -44,8 +44,8 @@ exports.createquest = async (req, res) => {
 
         const totalQuests = await Quest.countDocuments();
 
-        if (totalQuests >= 8) {
-            return res.status(400).json({ message: "bad-request", data: "Maximum number of quests (8) has been reached." });
+        if (totalQuests >= 7) {
+            return res.status(400).json({ message: "bad-request", data: "Maximum number of quests (7) has been reached." });
         }
 
         if (!VALID_QUEST_TYPES.includes(type)) {
