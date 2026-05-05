@@ -4,6 +4,7 @@ const Users = require("../models/Users")
 
 const { default: mongoose } = require("mongoose");
 const {pushcustomnotificationsend} = require("../utils/onesignal")
+const { applyInboxRewards } = require("../utils/rewards")
 
 
 exports.viewPlayerMessage = async (req, res) => {
@@ -79,6 +80,38 @@ exports.messagePlayers = async (req, res) => {
     pushcustomnotificationsend(process.env.ONE_SIGNAL_IN_GAME_MESSAGE_TEMPLATE_ID, title, truncateByWord(description, 100))
     
     return res.json({ message: "success" });
+}
+
+// POST /inbox/claim/:id  (player route)
+exports.claimInboxReward = async (req, res) => {
+    const { id } = req.params
+    const userid = req.user?.id
+
+    if (!userid) {
+        return res.status(401).json({ message: "failed", data: "Unauthorized." })
+    }
+
+    const entry = await Inbox.findOne({
+        _id: new mongoose.Types.ObjectId(id),
+        owner: new mongoose.Types.ObjectId(userid)
+    })
+
+    if (!entry) {
+        return res.status(404).json({ message: "failed", data: "Inbox entry not found." })
+    }
+
+    if (entry.status === "claimed") {
+        return res.status(400).json({ message: "failed", data: "Reward already claimed." })
+    }
+
+    if (Array.isArray(entry.rewards) && entry.rewards.length > 0) {
+        await applyInboxRewards(userid, entry.rewards)
+    }
+
+    entry.status = "claimed"
+    await entry.save()
+
+    return res.json({ message: "success" })
 }
 
 function truncateByWord(text, maxLength) {

@@ -8,6 +8,56 @@ const energyUtils = require("../utils/energy");
 
 
 exports.grantRewardsToPlayer = async (playerId, rewards = []) => {
+    const validRewards = []
+
+    for (const reward of rewards) {
+        if (!reward || !reward.type) continue
+
+        const rewardType = String(reward.type).toLowerCase().trim()
+        const rewardAmount = Number(reward.amount) || 0
+
+        if (rewardType === "exp" || rewardType === "leaderboard") {
+            validRewards.push({ type: rewardType, amount: rewardAmount })
+            continue
+        }
+
+        if (rewardType === "energy" && !reward.itemid) {
+            validRewards.push({ type: "energy", amount: rewardAmount })
+            continue
+        }
+
+        if (!reward.itemid) continue
+
+        const marketItem = await Marketplace.findOne({ itemid: reward.itemid })
+        if (!marketItem) continue
+
+        const marketType = String(marketItem.type || "").toLowerCase().trim()
+        const inventoryType = marketType || rewardType
+        if (inventoryType !== "potion" && inventoryType !== "title" && inventoryType !== "energy") {
+            continue
+        }
+
+        validRewards.push({
+            type: inventoryType,
+            amount: Math.max(1, rewardAmount || 1),
+            itemid: marketItem.itemid
+        })
+    }
+
+    if (validRewards.length === 0) return
+
+    await Inbox.create({
+        owner: new mongoose.Types.ObjectId(playerId),
+        type: "reward",
+        title: "You have rewards waiting!",
+        description: `You have ${validRewards.length} reward(s) ready to claim.`,
+        rewards: validRewards,
+        status: "unopen"
+    })
+}
+
+// Called when a player claims an inbox reward entry — applies the actual reward
+exports.applyInboxRewards = async (playerId, rewards = []) => {
     const ownerId = new mongoose.Types.ObjectId(playerId)
 
     for (const reward of rewards) {
@@ -43,18 +93,37 @@ exports.grantRewardsToPlayer = async (playerId, rewards = []) => {
         }
         const itemQuantity = Math.max(1, rewardAmount || 1)
 
-        // Place items in inbox first — user claims them from there
-        await Inbox.create({
-            owner: new mongoose.Types.ObjectId(playerId),
-            type: "reward",
-            title: `You received: ${marketItem.itemname}`,
-            description: `A reward of ${itemQuantity}x ${marketItem.itemname} is waiting for you.`,
-            rewards: [{
-                type: inventoryType,
-                amount: itemQuantity,
-                itemid: marketItem.itemid
-            }],
-            status: "unopen"
-        })
+        if (inventoryType === "title") {
+            const alreadyOwned = await Inventory.findOne({ owner: ownerId, itemid: reward.itemid })
+            if (!alreadyOwned) {
+                await Inventory.create([{
+                    owner: ownerId,
+                    itemid: marketItem.itemid,
+                    itemname: marketItem.itemname,
+                    type: inventoryType,
+                    quantity: 1,
+                    isEquipped: false
+                }])
+            }
+            continue
+        }
+
+        const existingItem = await Inventory.findOne({ owner: ownerId, itemid: reward.itemid })
+        if (existingItem) {
+            await Inventory.findOneAndUpdate(
+                { owner: ownerId, itemid: reward.itemid },
+                { $inc: { quantity: itemQuantity } }
+            )
+            continue
+        }
+
+        await Inventory.create([{
+            owner: ownerId,
+            itemid: marketItem.itemid,
+            itemname: marketItem.itemname,
+            type: inventoryType,
+            quantity: itemQuantity,
+            isEquipped: false
+        }])
     }
 }
