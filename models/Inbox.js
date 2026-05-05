@@ -9,9 +9,13 @@ const inboxSchema = new mongoose.Schema(
         type: {
             type: String
         },
-        rewards: {
-            type: [{type: { type: String }, amount: { type: Number }, status: { type: String }}]
-        },
+        rewards: [
+            {
+                type: { type: String, required: true },  // "exp" | "leaderboard" | "energy" | "item" | ...
+                amount: { type: Number, default: 0 },
+                itemid: { type: String }                 // optional, used when type is "item"
+            }
+        ],
         title: {
             type: String
         },

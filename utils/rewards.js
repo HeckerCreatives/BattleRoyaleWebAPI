@@ -1,6 +1,7 @@
 const { default: mongoose } = require("mongoose");
 const Inventory = require("../models/Inventory");
 const Marketplace = require("../models/Marketplace");
+const Inbox = require("../models/Inbox");
 const xpUtils = require("../utils/xp");
 const leaderboardUtils = require("../utils/leaderboard");
 const energyUtils = require("../utils/energy");
@@ -42,46 +43,18 @@ exports.grantRewardsToPlayer = async (playerId, rewards = []) => {
         }
         const itemQuantity = Math.max(1, rewardAmount || 1)
 
-        if (inventoryType === "title") {
-            const alreadyOwned = await Inventory.findOne({
-                owner: ownerId,
-                itemid: reward.itemid
-            })
-
-            if (!alreadyOwned) {
-                await Inventory.create([{
-                    owner: ownerId,
-                    itemid: marketItem.itemid,
-                    itemname: marketItem.itemname,
-                    type: inventoryType,
-                    quantity: 1,
-                    isEquipped: false
-                }])
-            }
-
-            continue
-        }
-
-        const existingItem = await Inventory.findOne({
-            owner: ownerId,
-            itemid: reward.itemid
+        // Place items in inbox first — user claims them from there
+        await Inbox.create({
+            owner: new mongoose.Types.ObjectId(playerId),
+            type: "reward",
+            title: `You received: ${marketItem.itemname}`,
+            description: `A reward of ${itemQuantity}x ${marketItem.itemname} is waiting for you.`,
+            rewards: [{
+                type: inventoryType,
+                amount: itemQuantity,
+                itemid: marketItem.itemid
+            }],
+            status: "unopen"
         })
-
-        if (existingItem) {
-            await Inventory.findOneAndUpdate(
-                { owner: ownerId, itemid: reward.itemid },
-                { $inc: { quantity: itemQuantity } }
-            )
-            continue
-        }
-
-        await Inventory.create([{
-            owner: ownerId,
-            itemid: marketItem.itemid,
-            itemname: marketItem.itemname,
-            type: inventoryType,
-            quantity: itemQuantity,
-            isEquipped: false
-        }])
     }
 }

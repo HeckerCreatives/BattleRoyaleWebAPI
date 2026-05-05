@@ -205,7 +205,7 @@ exports.getPlayerList = async (req, res) => {
     const { page, limit, search, filter } = req.query;
  
     const pageOptions = {
-        page: parseInt(page) || 0,
+        page: parseInt(page) || 1,
         limit: parseInt(limit) || 10,
     }
 
@@ -255,7 +255,7 @@ exports.getPlayerList = async (req, res) => {
                 }
             },
             {
-                $skip: pageOptions.page * pageOptions.limit 
+                $skip: (pageOptions.page - 1) * pageOptions.limit
             },
             {
                 $limit: pageOptions.limit 
