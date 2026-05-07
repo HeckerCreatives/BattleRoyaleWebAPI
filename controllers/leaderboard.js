@@ -12,8 +12,8 @@ exports.getleaderboard = async (req, res) => {
 
     const leaderboardType = type || 'points';
     const pageLimit = parseInt(limit) || 50;
-    const currentPage = parseInt(page) || 1;
-    const skip = (currentPage - 1) * pageLimit;
+    const currentPage = parseInt(page) || 0;
+    const skip = currentPage * pageLimit;
 
     let lbdata, totalDocuments, amountField;
 
@@ -56,12 +56,20 @@ exports.getleaderboard = async (req, res) => {
             break;
 
         case 'matches':
-            lbdata = await Usergamedetails.find({ losses: { $gt: 0 } })
-                .populate({ path: "owner", select: "username" })
-                .limit(pageLimit).skip(skip)
-                .sort({ losses: -1, updatedAt: -1 });
-            totalDocuments = await Usergamedetails.countDocuments({ losses: { $gt: 0 } });
-            amountField = 'losses';
+            lbdata = await Matchhistory.aggregate([
+                { $group: { _id: "$owner", totalMatches: { $sum: 1 } } },
+                { $sort: { totalMatches: -1 } },
+                { $skip: skip },
+                { $limit: pageLimit },
+                { $lookup: { from: "users", localField: "_id", foreignField: "_id", as: "ownerData" } },
+                { $unwind: "$ownerData" },
+                { $project: { _id: 0, owner: { username: "$ownerData.username" }, totalMatches: 1 } }
+            ]);
+            totalDocuments = (await Matchhistory.aggregate([
+                { $group: { _id: "$owner" } },
+                { $count: "total" }
+            ]))[0]?.total ?? 0;
+            amountField = 'totalMatches';
             break;
 
         case 'wins':
@@ -101,8 +109,8 @@ exports.getleaderboard = async (req, res) => {
 
     // Calculate pagination
     const totalPages = Math.ceil(totalDocuments / pageLimit);
-    const hasNextPage = currentPage < totalPages;
-    const hasPrevPage = currentPage > 1;
+    const hasNextPage = currentPage < totalPages - 1;
+    const hasPrevPage = currentPage > 0;
 
     // Batch fetch all stats
     const allStats = await getBatchMatchStats([id]);
