@@ -26,17 +26,17 @@ exports.getMyInventory = async (req, res) => {
         };
 
         // Build match condition
-        const matchCondition = { owner: id, isMintable: true };
+        const matchCondition = { owner: id };
         
         // // Filter: Exclude listed items by default
         // if (includeListed !== 'true') {
         //     matchCondition.isListed = false;
         // }
         
-        // Filter: Exclude minted NFTs by default
-        if (includeNFTs === 'true') {
-            matchCondition.isMinted = true;
-        } 
+        // // Filter: Exclude minted NFTs by default
+        // if (includeNFTs === 'true') {
+        //     matchCondition.isMinted = true;
+        // } 
 
         // Filter: By type (POTION, ENERGY, TITLE, etc.)
         if (type) {
