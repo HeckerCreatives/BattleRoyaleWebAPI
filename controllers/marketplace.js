@@ -659,8 +659,8 @@ exports.createmarketplaceitem = async (req, res) => {
             itemname,
             description: description || "",
             amount: amount.toString(),
-            currency: currency.toUpperCase(),
-            type: type.toUpperCase(),
+            currency: currency.toLowerCase(),
+            type: type.toLowerCase(),
             consumable: consumable || "0"
         });
 
@@ -691,8 +691,8 @@ exports.updatemarketplaceitem = async (req, res) => {
         if (itemname) updateData.itemname = itemname;
         if (description !== undefined) updateData.description = description;
         if (amount) updateData.amount = amount.toString();
-        if (currency) updateData.currency = currency.toUpperCase();
-        if (type) updateData.type = type.toUpperCase();
+        if (currency) updateData.currency = currency.toLowerCase();
+        if (type) updateData.type = type.toLowerCase();
         if (consumable !== undefined) updateData.consumable = consumable;
 
         const updatedItem = await Marketplace.findOneAndUpdate(

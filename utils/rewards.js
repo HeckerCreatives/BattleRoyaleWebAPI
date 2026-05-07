@@ -9,6 +9,7 @@ const energyUtils = require("../utils/energy");
 
 exports.grantRewardsToPlayer = async (playerId, rewards = []) => {
     const validRewards = []
+    const rewardLabels = []
 
     for (const reward of rewards) {
         if (!reward || !reward.type) continue
@@ -18,11 +19,13 @@ exports.grantRewardsToPlayer = async (playerId, rewards = []) => {
 
         if (rewardType === "exp" || rewardType === "leaderboard") {
             validRewards.push({ type: rewardType, amount: rewardAmount })
+            rewardLabels.push({ name: rewardType === "exp" ? "EXP" : "Leaderboard Points", amount: rewardAmount })
             continue
         }
 
         if (rewardType === "energy" && !reward.itemid) {
             validRewards.push({ type: "energy", amount: rewardAmount })
+            rewardLabels.push({ name: "Energy", amount: rewardAmount })
             continue
         }
 
@@ -37,20 +40,20 @@ exports.grantRewardsToPlayer = async (playerId, rewards = []) => {
             continue
         }
 
-        validRewards.push({
-            type: inventoryType,
-            amount: Math.max(1, rewardAmount || 1),
-            itemid: marketItem.itemid
-        })
+        const itemAmount = Math.max(1, rewardAmount || 1)
+        validRewards.push({ type: inventoryType, amount: itemAmount, itemid: marketItem.itemid })
+        rewardLabels.push({ name: marketItem.itemname || marketItem.itemid, amount: itemAmount })
     }
 
     if (validRewards.length === 0) return
+
+    const itemLines = rewardLabels.map(r => `${r.name} x ${r.amount}`).join('\n')
 
     await Inbox.create({
         owner: new mongoose.Types.ObjectId(playerId),
         type: "reward",
         title: "You have rewards waiting!",
-        description: `You have ${validRewards.length} reward(s) ready to claim.`,
+        description: `You have received ${itemLines} from admin!\n\nThank you for playing Rise of Fearless`,
         rewards: validRewards,
         status: "unopen"
     })
