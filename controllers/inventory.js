@@ -40,7 +40,7 @@ exports.getMyInventory = async (req, res) => {
 
         // Filter: By type (POTION, ENERGY, TITLE, etc.)
         if (type) {
-            matchCondition.type = type.toUpperCase();
+            matchCondition.type = type.toLowerCase();
         }
 
         // Build sort condition

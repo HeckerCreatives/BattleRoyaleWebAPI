@@ -1,6 +1,6 @@
 const { default: mongoose } = require("mongoose");
 const Season = require("../models/Season");
-const { calculateSeasonEndTime, getTimeUntilSeasonEnd, updateSeasonStatuses } = require("../utils/seasonUtils");
+const { getTimeUntilSeasonEnd, transitionFromEndedSeason, updateSeasonStatuses } = require("../utils/seasonUtils");
 
 exports.createseason = async (req, res) => {
     try {
@@ -219,6 +219,22 @@ exports.endseason = async (req, res) => {
             });
         }
 
+        const existingSeason = await Season.findById(seasonId);
+
+        if (!existingSeason) {
+            return res.status(404).json({
+                message: "not-found",
+                data: "Season not found."
+            });
+        }
+
+        if (existingSeason.status !== "active") {
+            return res.status(400).json({
+                message: "bad-request",
+                data: "Only an active season can be ended manually."
+            });
+        }
+
         // Find and end the season
         const season = await Season.findByIdAndUpdate(
             seasonId,
@@ -233,6 +249,16 @@ exports.endseason = async (req, res) => {
             });
         }
 
+        const transitionResult = await transitionFromEndedSeason(season);
+
+        let nextSeasonTimeInfo = null;
+        if (transitionResult && transitionResult.activatedSeason) {
+            nextSeasonTimeInfo = getTimeUntilSeasonEnd(
+                transitionResult.activatedSeason.startedAt,
+                transitionResult.activatedSeason.duration
+            );
+        }
+
         // Calculate final time information
         const timeInfo = getTimeUntilSeasonEnd(season.startedAt, season.duration);
 
@@ -240,7 +266,9 @@ exports.endseason = async (req, res) => {
             message: "success",
             data: {
                 season: season,
-                timeInfo: timeInfo
+                timeInfo: timeInfo,
+                transition: transitionResult,
+                nextSeasonTimeInfo: nextSeasonTimeInfo
             }
         });
 
