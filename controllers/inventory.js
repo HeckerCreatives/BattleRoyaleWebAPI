@@ -67,7 +67,7 @@ exports.getMyInventory = async (req, res) => {
                 break;
         }
 
-        console.log(matchCondition)
+        // console.log(matchCondition)
         // Get total count for pagination
         const totalCount = await Inventory.countDocuments(matchCondition);
 
