@@ -25,13 +25,13 @@ exports.getusergamedetails = async (req, res) => {
 
     //  step 2: get the real rank of user
 
-    const rankvalue = await Leaderboard.countDocuments({amount: {$gte: lbvalue.amount}})
-    .then(data => data)
-    .catch(err => {
-        console.log(`There's a problem getting the user rank leaderboard`)
-
-        return res.status(400).json({message: "bad-request", data: "There's a problem with the server. Please try again later"})
-    })
+    const rankvalue =
+    (await Leaderboard.countDocuments({
+        $or: [
+        { amount: { $gt: lbvalue.amount } },
+        { amount: lbvalue.amount, updatedAt: { $gt: lbvalue.updatedAt } }
+        ]
+    })) + 1;
 
     const data = {
         kill: usergamedata.kill,
@@ -69,14 +69,14 @@ exports.getusergamedetailssuperadmin = async (req, res) => {
 
     //  step 2: get the real rank of user
 
-    const rankvalue = await Leaderboard.countDocuments({amount: {$gte: lbvalue.amount}})
-    .then(data => data)
-    .catch(err => {
-        console.log(`There's a problem getting the user rank leaderboard`)
-
-        return res.status(400).json({message: "bad-request", data: "There's a problem with the server. Please try again later"})
-    })
-
+    const rankvalue =
+    (await Leaderboard.countDocuments({
+        $or: [
+        { amount: { $gt: lbvalue.amount } },
+        { amount: lbvalue.amount, updatedAt: { $gt: lbvalue.updatedAt } }
+        ]
+    })) + 1;
+    
     const data = {
         kill: usergamedata.kill,
         death: usergamedata.death,
