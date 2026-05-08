@@ -5,6 +5,7 @@ const router = require("express").Router();
 
 
 router
+ .get("/stats", protectplayer, inventoryController.getInventoryStats)
  .get("/getmyinventory", protectplayer, inventoryController.getMyInventory)
  .get("/nftactivity", protectplayer, inventoryController.getNFTActivity)
  .get("/token", protectplayer, inventoryController.getTokenDetails)

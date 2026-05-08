@@ -7,6 +7,39 @@ const { ethers, JsonRpcProvider } = require('ethers');
 
 
 
+exports.getInventoryStats = async (req, res) => {
+    try {
+        const { id } = req.user;
+
+        // Count items by type for the authenticated player
+        const typeCounts = await Inventory.aggregate([
+            { $match: { owner: new mongoose.Types.ObjectId(id) } },
+            { $group: { _id: "$type", total: { $sum: "$quantity" } } }
+        ]);
+
+        const countMap = {};
+        for (const entry of typeCounts) {
+            if (entry._id) countMap[entry._id.toLowerCase()] = entry.total;
+        }
+
+        return res.json({
+            message: "success",
+            data: {
+                headGear:   countMap["headgear"]   || 0,
+                upperBody:  countMap["upperbody"]  || 0,
+                lowerBody:  countMap["lowerbody"]  || 0,
+                gloves:     countMap["gloves"]     || 0,
+                footwear:   countMap["footwear"]   || 0,
+                weapon:     0,  // reserved — weapons not yet in inventory
+                title:      countMap["title"]      || 0,
+            }
+        });
+    } catch (err) {
+        console.error('Get inventory stats error:', err);
+        return res.status(500).json({ message: "error", data: "Failed to retrieve inventory stats." });
+    }
+};
+
 exports.getMyInventory = async (req, res) => {
     try {
         const { username, id } = req.user;
