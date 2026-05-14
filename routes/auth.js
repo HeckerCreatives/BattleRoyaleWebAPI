@@ -1,6 +1,6 @@
 const router = require("express").Router()
 
-const {  register, authlogin, logout, registerstaffs, requestNonce, walletLogin, linkWallet, unlinkWallet, checkSession, getUserList } = require("../controllers/auth")
+const {  register, authlogin, logout, registerstaffs, requestNonce, walletLogin, linkWallet, unlinkWallet, checkSession, getUserList, autoLogin } = require("../controllers/auth")
 
 const { protectsuperadmin, protectplayer } = require("../middleware/middleware")
 
@@ -18,5 +18,8 @@ router
     .post("/wallet/login", walletLogin)
     .post("/wallet/link", protectplayer, linkWallet)
     .post("/wallet/unlink", protectplayer, unlinkWallet)
+
+    // Auto login endpoint for login page
+    .get("/auto-login", autoLogin)
 
 module.exports = router;

@@ -1,3 +1,32 @@
+// Auto Login API: Checks if user is already logged in (for login page)
+exports.autoLogin = async (req, res) => {
+    try {
+        const token = req.headers.cookie?.split('; ').find(row => row.startsWith('sessionToken='))?.split('=')[1];
+        if (!token) {
+            return res.status(200).json({ loggedIn: false });
+        }
+        const publicKey = fs.readFileSync(path.resolve(__dirname, "../keys/public-key.pem"), 'utf-8');
+        let decodedToken;
+        try {
+            decodedToken = await jsonwebtokenPromisified.verify(token, publicKey, { algorithms: ['RS256'] });
+        } catch (err) {
+            return res.status(200).json({ loggedIn: false });
+        }
+        // Check user or staff
+        let user = null;
+        if (decodedToken.auth === "player" || decodedToken.auth === "user") {
+            user = await Users.findById(decodedToken.id);
+        } else {
+            user = await Staffusers.findById(decodedToken.id);
+        }
+        if (!user || user.status !== "active" || decodedToken.token !== user.webtoken) {
+            return res.status(200).json({ loggedIn: false });
+        }
+        return res.status(200).json({ loggedIn: true, user: { id: user._id, username: user.username, auth: decodedToken.auth } });
+    } catch (err) {
+        return res.status(200).json({ loggedIn: false });
+    }
+};
 
 //  Import all mandatory schemas and delete this if necessary
 const Users = require("../models/Users")
