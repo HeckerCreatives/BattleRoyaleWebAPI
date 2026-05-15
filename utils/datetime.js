@@ -48,3 +48,14 @@ exports.getdatetime = (timestamp) => {
     
     return month + '/' + day + '/' + year + ' ' + strTime;
 }
+
+exports.getsecondsuntilmidnight = () => {
+    const now = new Date();
+    const midnight = new Date();
+    midnight.setHours(24, 0, 0, 0); // midnight is 24:00 today
+
+    const diffMs = midnight - now;
+    const diffSeconds = Math.floor(diffMs / 1000);
+
+    return diffSeconds;
+}

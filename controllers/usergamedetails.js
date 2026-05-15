@@ -1,6 +1,8 @@
 const { default: mongoose } = require("mongoose")
 const Usergamedetails = require("../models/Usergamedetails")
 const { Leaderboard } = require("../models/Leaderboard")
+const { Energy } = require("../models/Energy")
+const { getsecondsuntilmidnight } = require("../utils/datetime")
 
 
 exports.getusergamedetails = async (req, res) => {

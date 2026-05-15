@@ -1,5 +1,5 @@
 const router = require("express").Router()
-const { getusergamedetails, updateusergamedetails, getusergamedetailssuperadmin } = require("../controllers/usergamedetails")
+const { updateusergamedetails, getusergamedetailssuperadmin, getusergamedetails } = require("../controllers/usergamedetails")
 const { protectplayer, protectsuperadmin } = require("../middleware/middleware")
 
 router
