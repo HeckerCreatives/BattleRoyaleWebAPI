@@ -215,8 +215,8 @@ exports.getPlayerList = async (req, res) => {
     if(search){
         searchMatchStage = {
             $or: [
-                { username: { $regex: search, $options: 'i' }},
-                { "details.email": { $regex: search, $options: 'i' } }
+                { username: search },
+                { "details.email": search },
             ]
         };
 

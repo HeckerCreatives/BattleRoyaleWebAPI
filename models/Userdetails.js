@@ -22,5 +22,8 @@ const UserdetailsSchema = new mongoose.Schema(
     }
 )
 
+// Add index for email for faster search
+UserdetailsSchema.index({ email: 1 })
+
 const Userdetails = mongoose.model("Userdetails", UserdetailsSchema)
 module.exports = Userdetails

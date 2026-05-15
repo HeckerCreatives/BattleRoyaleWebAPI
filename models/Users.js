@@ -55,5 +55,8 @@ UsersSchema.methods.matchPassword = async function(password){
     return await bcrypt.compare(password, this.password)
 }
 
+// Add index for username for faster search
+UsersSchema.index({ username: 1 })
+
 const Users = mongoose.model("Users", UsersSchema)
 module.exports = Users
