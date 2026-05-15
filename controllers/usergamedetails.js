@@ -53,7 +53,7 @@ exports.getusergamedetails = async (req, res) => {
         playtime: usergamedata.playtime,
         win: usergamedata.wins ?? 0,
         // loss name not change but its now total matches
-        loss: (usergamedata.losses ?? 0 + usergamedata.wins ?? 0),
+        loss: (usergamedata.losses ?? 0) + (usergamedata.wins ?? 0),
         userrank: rankvalue,
         energy: energyval.energy,
         leaderboard: lbvalue.amount,
