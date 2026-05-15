@@ -2,6 +2,7 @@ const { default: mongoose } = require("mongoose")
 const Usergamedetails = require("../models/Usergamedetails")
 const { Leaderboard } = require("../models/Leaderboard")
 
+
 exports.getusergamedetails = async (req, res) => {
     const {id, username} = req.user
     
@@ -33,16 +34,33 @@ exports.getusergamedetails = async (req, res) => {
         ]
     })) + 1;
 
+    const energyval = await Energy.findOne({owner: new mongoose.Types.ObjectId(id)})
+    .then(data => data)
+    .catch(err => {
+        console.log(`There's a problem getting the user value energy`)
+        
+        return res.status(400).json({message: "bad-request", data: "There's a problem with the server. Please try again later"})
+    })
+
+
     const data = {
         kill: usergamedata.kill,
         death: usergamedata.death,
         level: usergamedata.level,
         xp: usergamedata.xp,
+        playtime: usergamedata.playtime,
+        win: usergamedata.wins ?? 0,
+        // loss name not change but its now total matches
+        loss: (usergamedata.losses ?? 0 + usergamedata.wins ?? 0),
         userrank: rankvalue,
+        energy: energyval.energy,
+        leaderboard: lbvalue.amount,
+        energyresettime: getsecondsuntilmidnight()
     }
 
     return res.json({message: "success", data: data})
 }
+
 
 exports.getusergamedetailssuperadmin = async (req, res) => {
     const {id, username} = req.user
